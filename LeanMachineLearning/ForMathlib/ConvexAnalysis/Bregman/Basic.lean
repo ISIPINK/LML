@@ -38,10 +38,12 @@ variable {E F G : Type*} [AddCommGroup E] [AddCommGroup F] [AddCommGroup G]
 def bregDiv (f : E → F) (x y : E) (J : E →+ F) : F :=
   f x - f y - J (x - y)
 
+/-- Scoped notation for `bregDiv`. -/
 scoped[Bregman] notation "D_[" f "](" x ", " y ", " J ")" => Analysis.Convex.bregDiv f x y J
 
 open scoped Bregman
 
+/-- Unexpander for `bregDiv`. -/
 @[app_unexpander bregDiv]
 meta def unexpandBregDiv : Lean.PrettyPrinter.Unexpander
   | `($_ $f $x $y $J) => `(D_[$f]($x, $y, $J))
