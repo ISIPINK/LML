@@ -55,8 +55,10 @@ def IsSubgradient (V : Set E) (f : E → F) (y : E) (g_y : E →+ F) : Prop :=
 def subdifferential (V : Set E) (f : E → F) (y : E) : Set (E →+ F) :=
   { g | IsSubgradient V f y g }
 
+/-- Scoped notation for `subdifferential`. -/
 scoped[Bregman] notation:60 "∂[" V ", " y "] " f:50 => Analysis.Convex.subdifferential V f y
 
+/-- Unexpander for `subdifferential`. -/
 @[app_unexpander subdifferential]
 meta def unexpandSubdifferential : Lean.PrettyPrinter.Unexpander
   | `($_ $V $f $y) => `(∂[$V, $y] $f)
