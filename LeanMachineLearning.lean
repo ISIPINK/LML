@@ -3,6 +3,8 @@ module  -- shake: keep-all --deprecated_module: ignore
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
+public import LeanMachineLearning.ForMathlib.ConvexAnalysis.FenchelConjugate.Basic
+public import LeanMachineLearning.ForMathlib.ConvexAnalysis.FenchelConjugate.Calculus
 public import LeanMachineLearning.ForMathlib.InformationTheory.KullbackLeibler.ChainRule
 public import LeanMachineLearning.ForMathlib.InformationTheory.KullbackLeibler.CompProd
 public import LeanMachineLearning.ForMathlib.InformationTheory.KullbackLeibler.Convex
