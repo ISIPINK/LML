@@ -23,38 +23,44 @@ namespace Bandits
 
 namespace UCB
 
-variable {K : ℕ} {hK : 0 < K} {c : ℝ} {ν : Kernel (Fin K) ℝ} [IsMarkovKernel ν]
+variable {K : ℕ} [NeZero K] {c : ℝ} {ν : Kernel (Fin K) ℝ} [IsMarkovKernel ν]
   {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω} [IsProbabilityMeasure P]
   {O : ℕ → Ω → Unit} {A : ℕ → Ω → Fin K} {R : ℕ → Ω → ℝ}
   {σ2 : ℝ≥0} {n : ℕ} {ω : Ω}
 
 omit [IsMarkovKernel ν] in
-lemma gap_arm_le_two_mul_ucbWidth [Nonempty (Fin K)]
+/-- If the means of the best arm and of arm `b` lie in their confidence intervals and the UCB index
+of `b` is at least that of the best arm, then the gap of `b` is at most twice its confidence
+width. -/
+lemma gap_le_two_mul_ucbWidth {b : Fin K}
     (h_best : (ν (bestArm ν))[id] ≤ empMean A R (bestArm ν) n ω + ucbWidth A c (bestArm ν) n ω)
-    (h_arm : empMean A R (A n ω) n ω - ucbWidth A c (A n ω) n ω ≤ (ν (A n ω))[id])
+    (h_arm : empMean A R b n ω - ucbWidth A c b n ω ≤ (ν b)[id])
     (h_le : empMean A R (bestArm ν) n ω + ucbWidth A c (bestArm ν) n ω ≤
-      empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω) :
-    gap ν (A n ω) ≤ 2 * ucbWidth A c (A n ω) n ω := by
+      empMean A R b n ω + ucbWidth A c b n ω) :
+    gap ν b ≤ 2 * ucbWidth A c b n ω := by
   rw [gap_eq_bestArm_sub, sub_le_iff_le_add']
   calc (ν (bestArm ν))[id]
   _ ≤ empMean A R (bestArm ν) n ω + ucbWidth A c (bestArm ν) n ω := h_best
-  _ ≤ empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω := h_le
-  _ ≤ (ν (A n ω))[id] + 2 * ucbWidth A c (A n ω) n ω := by
+  _ ≤ empMean A R b n ω + ucbWidth A c b n ω := h_le
+  _ ≤ (ν b)[id] + 2 * ucbWidth A c b n ω := by
     rw [two_mul, ← add_assoc]
     gcongr
     rwa [sub_le_iff_le_add] at h_arm
 
 omit [IsMarkovKernel ν] in
-lemma pullCount_arm_le [Nonempty (Fin K)] (hc : 0 ≤ c)
+/-- If the means of the best arm and of arm `b` lie in their confidence intervals and the UCB index
+of `b` is at least that of the best arm, then the number of pulls of `b` is at most
+`8 * c * log (n + 1) / gap ν b ^ 2`. -/
+lemma pullCount_le_of_ucbIndex_le (hc : 0 ≤ c) {b : Fin K}
     (h_best : (ν (bestArm ν))[id] ≤ empMean A R (bestArm ν) n ω + ucbWidth A c (bestArm ν) n ω)
-    (h_arm : empMean A R (A n ω) n ω - ucbWidth A c (A n ω) n ω ≤ (ν (A n ω))[id])
+    (h_arm : empMean A R b n ω - ucbWidth A c b n ω ≤ (ν b)[id])
     (h_le : empMean A R (bestArm ν) n ω + ucbWidth A c (bestArm ν) n ω ≤
-      empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω)
-    (h_gap_pos : 0 < gap ν (A n ω)) (h_pull_pos : 0 < pullCount A (A n ω) n ω) :
-    pullCount A (A n ω) n ω ≤ 8 * c * log (n + 1) / gap ν (A n ω) ^ 2 := by
-  have h_gap_le := gap_arm_le_two_mul_ucbWidth h_best h_arm h_le
+      empMean A R b n ω + ucbWidth A c b n ω)
+    (h_gap_pos : 0 < gap ν b) (h_pull_pos : 0 < pullCount A b n ω) :
+    pullCount A b n ω ≤ 8 * c * log (n + 1) / gap ν b ^ 2 := by
+  have h_gap_le := gap_le_two_mul_ucbWidth h_best h_arm h_le
   rw [ucbWidth] at h_gap_le
-  have h2 : (gap ν (A n ω)) ^ 2 ≤ (2 * √(2 * c * log (n + 1) / pullCount A (A n ω) n ω)) ^ 2 := by
+  have h2 : (gap ν b) ^ 2 ≤ (2 * √(2 * c * log (n + 1) / pullCount A b n ω)) ^ 2 := by
     gcongr
   rw [mul_pow, sq_sqrt] at h2
   · have : (2 : ℝ) ^ 2 = 4 := by norm_num
@@ -64,41 +70,26 @@ lemma pullCount_arm_le [Nonempty (Fin K)] (hc : 0 ≤ c)
   · have : 0 ≤ log (n + 1) := by simp [log_nonneg]
     positivity
 
-lemma prob_ucbIndex_le [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
+/-- The probability that the UCB index of arm `a` is below its mean is at most
+`1 / (n + 1) ^ (c - 1)`. -/
+lemma prob_ucbIndex_le {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
     P {h | 0 < pullCount A a n h ∧ empMean A R a n h + ucbWidth A (c * σ2) a n h ≤ (ν a)[id]} ≤
       1 / (n + 1) ^ (c - 1) := by
-  let s : Set (ℕ × ℝ) := {(m, x) | 0 < m ∧ x / m + √(2 * (c * σ2) * log (↑n + 1) / m) ≤ (ν a)[id]}
-  have hs : MeasurableSet s := by
-    simp only [Nat.cast_nonneg, sqrt_div', id_eq, measurableSet_setOfPred, s]
+  have h_le := prob_pullCount_pos_and_le h a n
+    (p := fun k x ↦ x / k + √(2 * c * σ2 * log (n + 1) / k) ≤ (ν a)[id])
+    (B := 1 / (n + 1) ^ c) ?_ ?_
+  rotate_left
+  · simp only [Nat.cast_nonneg, sqrt_div', id_eq]
     fun_prop
-  classical
-  calc P {h | 0 < pullCount A a n h ∧ empMean A R a n h + ucbWidth A (c * σ2) a n h ≤ (ν a)[id]}
-  _ ≤ ∑ k ∈ range (n + 1) with k ∈ Prod.fst '' s,
-      (streamMeasure ν) {ω | ∑ i ∈ range k, ω i a ∈ Prod.mk k ⁻¹' s} :=
-    prob_pullCount_prod_sumRewards_mem_le h hs
-  _ ≤ ∑ k ∈ Icc 1 n,
-      (streamMeasure ν) {ω | ∑ i ∈ range k, ω i a ∈ Prod.mk k ⁻¹' s} := by
-    refine Finset.sum_le_sum_of_subset_of_nonneg (fun m ↦ ?_) fun _ _ _ ↦ by positivity
-    simp [s]
-    grind
-  _ = ∑ k ∈ Icc 1 n,
-      (streamMeasure ν) {ω | (∑ i ∈ range k, ω i a) / k + √(2 * c * σ2 * log (↑n + 1) / k) ≤
-        (ν a)[id]} := by
-    refine Finset.sum_congr rfl fun k hk ↦ ?_
-    congr with ω
-    have hk : 0 < k := by grind
-    simp only [Nat.cast_nonneg, sqrt_div', id_eq, Set.preimage_ofPred_eq, hk, true_and,
-      Set.mem_ofPred_eq, s]
-    grind
-  _ ≤ ∑ k ∈ Icc 1 n, (1 : ℝ≥0∞) / (n + 1) ^ c := by
-    gcongr with k hk
-    exact prob_avg_add_sqrt_log_le hν hσ2 hc a n k (by grind)
+  · exact fun k hk ↦ prob_avg_add_sqrt_log_le hν hσ2 hc a n k hk
+  simp only [mul_assoc] at h_le
+  simp only [empMean, ucbWidth, mul_assoc]
+  calc _ ≤ (n : ℝ≥0∞) * (1 / (n + 1) ^ c) := h_le
   _ ≤ (n + 1) * (1 : ℝ≥0∞) / (n + 1) ^ c := by
-    simp only [one_div, sum_const, Nat.card_Icc, add_tsub_cancel_right, nsmul_eq_mul, mul_one]
-    rw [div_eq_mul_inv ((n : ℝ≥0∞) + 1)]
+    rw [mul_one_div, mul_one]
     gcongr
     exact le_self_add
   _ = 1 / (n + 1) ^ (c - 1) := by
@@ -106,41 +97,26 @@ lemma prob_ucbIndex_le [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
     rw [ENNReal.rpow_sub _ _ (by simp) (by finiteness), ENNReal.rpow_one, div_eq_mul_inv,
       ENNReal.div_eq_inv_mul, ENNReal.mul_inv (by simp) (by simp), inv_inv]
 
-lemma prob_ucbIndex_ge [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
+/-- The probability that the lower confidence bound of arm `a` is above its mean is at most
+`1 / (n + 1) ^ (c - 1)`. -/
+lemma prob_ucbIndex_ge {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
     P {h | 0 < pullCount A a n h ∧
       (ν a)[id] ≤ empMean A R a n h - ucbWidth A (c * σ2) a n h} ≤ 1 / (n + 1) ^ (c - 1) := by
-  let s : Set (ℕ × ℝ) := {(m, x) | 0 < m ∧ (ν a)[id] ≤ x / m - √(2 * (c * σ2) * log (↑n + 1) / m)}
-  have hs : MeasurableSet s := by
-    simp only [Nat.cast_nonneg, sqrt_div', id_eq, measurableSet_setOfPred, s]
+  have h_le := prob_pullCount_pos_and_le h a n
+    (p := fun k x ↦ (ν a)[id] ≤ x / k - √(2 * c * σ2 * log (n + 1) / k))
+    (B := 1 / (n + 1) ^ c) ?_ ?_
+  rotate_left
+  · simp only [Nat.cast_nonneg, sqrt_div', id_eq]
     fun_prop
-  classical
-  calc P {h | 0 < pullCount A a n h ∧ (ν a)[id] ≤ empMean A R a n h - ucbWidth A (c * σ2) a n h}
-  _ ≤ ∑ k ∈ range (n + 1) with k ∈ Prod.fst '' s,
-      (streamMeasure ν) {ω | ∑ i ∈ range k, ω i a ∈ Prod.mk k ⁻¹' s} :=
-    prob_pullCount_prod_sumRewards_mem_le h hs
-  _ ≤ ∑ k ∈ Icc 1 n,
-      (streamMeasure ν) {ω | ∑ i ∈ range k, ω i a ∈ Prod.mk k ⁻¹' s} := by
-    refine Finset.sum_le_sum_of_subset_of_nonneg (fun m ↦ ?_) fun _ _ _ ↦ by positivity
-    simp [s]
-    grind
-  _ = ∑ k ∈ Icc 1 n,
-      (streamMeasure ν)
-        {ω | (ν a)[id] ≤ (∑ i ∈ range k, ω i a) / k - √(2 * c * σ2 * log (↑n + 1) / k)} := by
-    refine Finset.sum_congr rfl fun k hk ↦ ?_
-    congr with ω
-    have hk : 0 < k := by grind
-    simp only [id_eq, Nat.cast_nonneg, sqrt_div', Set.preimage_ofPred_eq, hk, true_and,
-      Set.mem_ofPred_eq, s]
-    grind
-  _ ≤ ∑ k ∈ Icc 1 n, (1 : ℝ≥0∞) / (n + 1) ^ c := by
-    gcongr with k hk
-    exact prob_avg_sub_sqrt_log_ge hν hσ2 hc a n k (by grind)
+  · exact fun k hk ↦ prob_avg_sub_sqrt_log_ge hν hσ2 hc a n k hk
+  simp only [mul_assoc] at h_le
+  simp only [empMean, ucbWidth, mul_assoc]
+  calc _ ≤ (n : ℝ≥0∞) * (1 / (n + 1) ^ c) := h_le
   _ ≤ (n + 1) * (1 : ℝ≥0∞) / (n + 1) ^ c := by
-    simp only [one_div, sum_const, Nat.card_Icc, add_tsub_cancel_right, nsmul_eq_mul, mul_one]
-    rw [div_eq_mul_inv ((n : ℝ≥0∞) + 1)]
+    rw [mul_one_div, mul_one]
     gcongr
     exact le_self_add
   _ = 1 / (n + 1) ^ (c - 1) := by
@@ -148,7 +124,7 @@ lemma prob_ucbIndex_ge [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
     rw [ENNReal.rpow_sub _ _ (by simp) (by finiteness), ENNReal.rpow_one, div_eq_mul_inv,
       ENNReal.div_eq_inv_mul, ENNReal.mul_inv (by simp) (by simp), inv_inv]
 
-lemma probReal_ucbIndex_le [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
+lemma probReal_ucbIndex_le {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
@@ -161,7 +137,7 @@ lemma probReal_ucbIndex_le [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
   rw [← ENNReal.toReal_rpow]
   norm_cast
 
-lemma probReal_ucbIndex_ge [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
+lemma probReal_ucbIndex_ge {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
@@ -175,7 +151,7 @@ lemma probReal_ucbIndex_ge [Nonempty (Fin K)] {alg : Algorithm Unit (Fin K) ℝ}
   norm_cast
 
 omit [IsMarkovKernel ν] in
-lemma pullCount_le_add_three [Nonempty (Fin K)] (a : Fin K) (n C : ℕ) (ω : Ω) :
+lemma pullCount_le_add_three (a : Fin K) (n C : ℕ) (ω : Ω) :
     pullCount A a n ω ≤ C + 1 +
       ∑ s ∈ range n, {s | A s ω = a ∧ C < pullCount A a s ω ∧
         (ν (bestArm ν))[id] ≤ empMean A R (bestArm ν) s ω + ucbWidth A c (bestArm ν) s ω ∧
@@ -217,8 +193,8 @@ lemma pullCount_le_add_three [Nonempty (Fin K)] (a : Fin K) (n C : ℕ) (ω : Ω
           ∑ s ∈ range n, D.indicator 1 s := by
       rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
 
-lemma pullCount_le_add_three_ae [Nonempty (Fin K)]
-    (h : IsAlgEnvSeq O A R (ucbAlgorithm hK c) (stationaryEnv ν) P)
+lemma pullCount_le_add_three_ae
+    (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P)
     (a : Fin K) (n C : ℕ) (hC : C ≠ 0) :
     ∀ᵐ ω ∂P,
     pullCount A a n ω ≤ C + 1 +
@@ -239,8 +215,7 @@ lemma pullCount_le_add_three_ae [Nonempty (Fin K)]
     exact fun h_gt ↦ hω _ (lt_of_le_of_lt (by grind) h_gt) _
   · exact fun h_gt ↦ hω _ (lt_of_le_of_lt (by grind) h_gt) _
 
-lemma some_sum_eq_zero [Nonempty (Fin K)]
-    (h : IsAlgEnvSeq O A R (ucbAlgorithm hK (c * σ2)) (stationaryEnv ν) P)
+lemma some_sum_eq_zero (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryEnv ν) P)
     (hc : 0 ≤ c) (a : Fin K) (h_gap : 0 < gap ν a) (n C : ℕ)
     (hC : C ≠ 0) (hC' : 8 * c * σ2 * log (n + 1) / gap ν a ^ 2 ≤ C) :
     ∀ᵐ ω ∂P,
@@ -248,14 +223,15 @@ lemma some_sum_eq_zero [Nonempty (Fin K)]
       (ν (bestArm ν))[id] ≤ empMean A R (bestArm ν) s ω + ucbWidth A (c * σ2) (bestArm ν) s ω ∧
       empMean A R (A s ω) s ω - ucbWidth A (c * σ2) (A s ω) s ω
         ≤ (ν (A s ω))[id]}.indicator 1 s = 0 := by
-  have h_ae := forall_ucbIndex_le_ucbIndex_arm h (bestArm ν) (ν := ν) (c := c * σ2) (hK := hK)
-  have h_gt := time_gt_of_pullCount_gt_one h a (ν := ν) (c := c * σ2) (hK := hK)
+  have h_ae := forall_ucbIndex_le_ucbIndex_arm h (bestArm ν) (ν := ν) (c := c * σ2)
+  have h_gt := time_gt_of_pullCount_gt_one h a (ν := ν) (c := c * σ2)
   filter_upwards [h_ae, h_gt] with ω h_le h_time_ge
   simp only [id_eq, tsub_le_iff_right, sum_eq_zero_iff, mem_range, Set.indicator_apply_eq_zero,
     Set.mem_ofPred_eq, Pi.one_apply, one_ne_zero, imp_false, not_and, not_le]
   intro k hn h_arm hC_lt h_le_best
   by_contra! h_le_arm
-  have h := pullCount_arm_le (by positivity : 0 ≤ c * σ2) h_le_best (by simpa) ?_ ?_ ?_
+  have h := pullCount_le_of_ucbIndex_le (b := A k ω) (by positivity : 0 ≤ c * σ2) h_le_best
+    (by simpa) ?_ ?_ ?_
   rotate_left
   · refine h_le _ ?_
     refine (h_time_ge _ ?_).le
@@ -272,8 +248,7 @@ lemma some_sum_eq_zero [Nonempty (Fin K)]
     simp_rw [← mul_assoc]
     gcongr
 
-lemma pullCount_ae_le_add_two [Nonempty (Fin K)]
-    (h : IsAlgEnvSeq O A R (ucbAlgorithm hK (c * σ2)) (stationaryEnv ν) P)
+lemma pullCount_ae_le_add_two (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryEnv ν) P)
     (hc : 0 ≤ c) (a : Fin K) (h_gap : 0 < gap ν a)
     (n C : ℕ) (hC : C ≠ 0) (hC' : 8 * c * σ2 * log (n + 1) / gap ν a ^ 2 ≤ C) :
     ∀ᵐ ω ∂P,
@@ -303,7 +278,7 @@ lemma constSum_lt_top (c : ℝ) (n : ℕ) : constSum c n < ∞ := by
 
 /-- Bound on the expectation of the number of pulls of each arm by the UCB algorithm. -/
 lemma expectation_pullCount_le'
-    (h : IsAlgEnvSeq O A R (ucbAlgorithm hK (c * σ2)) (stationaryEnv ν) P)
+    (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 < c) (a : Fin K) (h_gap : 0 < gap ν a) (n : ℕ) :
     ∫⁻ ω, pullCount A a n ω ∂P ≤
@@ -313,19 +288,14 @@ lemma expectation_pullCount_le'
   by_cases hn_zero : n = 0
   · simp [hn_zero]
   let C a : ℕ := ⌈8 * c * σ2 * log (n + 1) / gap ν a ^ 2⌉₊
-  have : Nonempty (Fin K) := Fin.pos_iff_nonempty.mp hK
   have h_set_1 b : MeasurableSet {a_1 | 0 < pullCount A a b a_1 ∧
       (ν a)[id] < empMean A R a b a_1 - ucbWidth A (c * σ2) a b a_1} := by
-    change MeasurableSet ({a_1 | 0 < pullCount A a b a_1} ∩
-      {a_1 | (ν a)[id] < empMean A R a b a_1 - ucbWidth A (c * σ2) a b a_1})
-    exact (measurableSet_lt (by fun_prop) (by fun_prop)).inter
-      (measurableSet_lt (by fun_prop) (by fun_prop))
+    simp only [measurableSet_setOfPred]
+    fun_prop
   have h_set_2 b : MeasurableSet {a | 0 < pullCount A (bestArm ν) b a ∧
       empMean A R (bestArm ν) b a + ucbWidth A (c * σ2) (bestArm ν) b a < (ν (bestArm ν))[id]} := by
-    change MeasurableSet ({a | 0 < pullCount A (bestArm ν) b a} ∩
-      {a | empMean A R (bestArm ν) b a + ucbWidth A (c * σ2) (bestArm ν) b a < (ν (bestArm ν))[id]})
-    exact (measurableSet_lt (by fun_prop) (by fun_prop)).inter
-      (measurableSet_lt (by fun_prop) (by fun_prop))
+    simp only [measurableSet_setOfPred]
+    fun_prop
   have h_meas_1 b : Measurable fun h ↦ {s | 0 < pullCount A a s h ∧ (ν a)[id] <
       empMean A R a s h - ucbWidth A (c * σ2) a s h}.indicator (1 : ℕ → ℕ) b := by
     simp only [id_eq, Set.indicator_apply, Set.mem_ofPred_eq, Pi.one_apply]
@@ -391,14 +361,13 @@ lemma expectation_pullCount_le'
     positivity
 
 /-- Bound on the expectation of the number of pulls of each arm by the UCB algorithm. -/
-lemma expectation_pullCount_le
-    (h : IsAlgEnvSeq O A R (ucbAlgorithm hK (c * σ2)) (stationaryEnv ν) P)
+lemma expectation_pullCount_le (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 < c) (a : Fin K) (h_gap : 0 < gap ν a) (n : ℕ) :
     P[fun ω ↦ (pullCount A a n ω : ℝ)] ≤
       8 * c * σ2 * log (n + 1) / gap ν a ^ 2 + 2 + 2 * (constSum c n).toReal := by
   have hA := h.measurable_action
-  have h := expectation_pullCount_le' h hν hσ2 hc a h_gap n (hK := hK)
+  have h := expectation_pullCount_le' h hν hσ2 hc a h_gap n
   simp_rw [← ENNReal.ofReal_natCast] at h
   rw [← ofReal_integral_eq_lintegral_ofReal] at h
   rotate_left
@@ -422,7 +391,7 @@ lemma expectation_pullCount_le
   ring
 
 /-- Regret bound for the UCB algorithm. -/
-theorem regret_le (h : IsAlgEnvSeq O A R (ucbAlgorithm hK (c * σ2)) (stationaryEnv ν) P)
+theorem regret_le (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 < c) (n : ℕ) :
     P[regret ν A n] ≤

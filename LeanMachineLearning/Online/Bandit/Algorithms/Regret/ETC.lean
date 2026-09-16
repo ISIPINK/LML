@@ -17,20 +17,16 @@ public import LeanMachineLearning.Online.Bandit.SumRewards
 open MeasureTheory ProbabilityTheory Finset Learning
 open scoped ENNReal NNReal
 
-namespace Bandits
+namespace Bandits.ETC
 
-variable {K : ℕ}
-
-namespace ETC
-
-variable {hK : 0 < K} {m : ℕ} {ν : Kernel (Fin K) ℝ} [IsMarkovKernel ν]
+variable {K : ℕ} [NeZero K] {m : ℕ} {ν : Kernel (Fin K) ℝ} [IsMarkovKernel ν]
   {Ω : Type*} {mΩ : MeasurableSpace Ω}
   {P : Measure Ω} [IsProbabilityMeasure P]
   {O : ℕ → Ω → Unit} {A : ℕ → Ω → Fin K} {R : ℕ → Ω → ℝ}
   {σ2 : ℝ≥0}
 
-lemma probReal_sumRewards_le_sumRewards_le [Nonempty (Fin K)]
-    (h : IsAlgEnvSeq O A R (etcAlgorithm hK m) (stationaryEnv ν) P)
+lemma probReal_sumRewards_le_sumRewards_le
+    (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a)) (a : Fin K) :
     P.real {ω | sumRewards A R (bestArm ν) (K * m) ω ≤ sumRewards A R a (K * m) ω} ≤
       Real.exp (-↑m * gap ν a ^ 2 / (4 * σ2)) := by
@@ -46,12 +42,11 @@ lemma probReal_sumRewards_le_sumRewards_le [Nonempty (Fin K)]
 
 /-- The probability that at time `K * m` the ETC algorithm chooses arm `a` is at most
 `exp(- m * Δ_a^2 / 4)`. -/
-lemma prob_arm_mul_eq_le [Nonempty (Fin K)]
-    (h : IsAlgEnvSeq O A R (etcAlgorithm hK m) (stationaryEnv ν) P)
+lemma prob_arm_mul_eq_le (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a)) (a : Fin K)
     (hm : m ≠ 0) :
     P.real {ω | A (K * m) ω = a} ≤ Real.exp (- (m : ℝ) * gap ν a ^ 2 / (4 * σ2)) := by
-  have h_pos : 0 < K * m := Nat.mul_pos hK hm.bot_lt
+  have h_pos : 0 < K * m := Nat.mul_pos (Nat.pos_of_neZero K) hm.bot_lt
   have h_le : P.real {ω | A (K * m) ω = a}
       ≤ P.real {ω | sumRewards A R (bestArm ν) (K * m) ω ≤ sumRewards A R a (K * m) ω} := by
     simp_rw [measureReal_def]
@@ -62,8 +57,7 @@ lemma prob_arm_mul_eq_le [Nonempty (Fin K)]
   exact h_le.trans (probReal_sumRewards_le_sumRewards_le h hν a)
 
 /-- Bound on the expectation of the number of pulls of each arm by the ETC algorithm. -/
-lemma expectation_pullCount_le [Nonempty (Fin K)]
-    (h : IsAlgEnvSeq O A R (etcAlgorithm hK m) (stationaryEnv ν) P)
+lemma expectation_pullCount_le (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (a : Fin K) (hm : m ≠ 0) {n : ℕ} (hn : K * m ≤ n) :
     P[fun ω ↦ (pullCount A a n ω : ℝ)]
@@ -91,8 +85,7 @@ lemma expectation_pullCount_le [Nonempty (Fin K)]
   · exact (measurableSet_singleton _).preimage (by fun_prop)
 
 /-- Regret bound for the ETC algorithm. -/
-theorem regret_le [Nonempty (Fin K)]
-    (h : IsAlgEnvSeq O A R (etcAlgorithm hK m) (stationaryEnv ν) P)
+theorem regret_le (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a)) (hm : m ≠ 0)
     (n : ℕ) (hn : K * m ≤ n) :
     P[regret ν A n] ≤
@@ -100,6 +93,4 @@ theorem regret_le [Nonempty (Fin K)]
   integral_regret_le_of_forall_integral_pullCount_le h
     (fun a _ ↦ expectation_pullCount_le h hν a hm hn)
 
-end ETC
-
-end Bandits
+end Bandits.ETC
