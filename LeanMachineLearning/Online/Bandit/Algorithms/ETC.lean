@@ -58,7 +58,6 @@ variable [NeZero K] {m : ℕ} {ν : Kernel (Fin K) ℝ} [IsMarkovKernel ν]
   {Ω : Type*} {mΩ : MeasurableSpace Ω}
   {P : Measure Ω} [IsProbabilityMeasure P]
   {O : ℕ → Ω → Unit} {A : ℕ → Ω → Fin K} {R : ℕ → Ω → ℝ}
-  {σ2 : ℝ≥0}
 
 /-- Before round `K * m`, the ETC algorithm behaves like the Round-Robin algorithm. -/
 lemma isAlgEnvSeqUntil_roundRobinAlgorithm

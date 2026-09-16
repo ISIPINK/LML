@@ -5,6 +5,8 @@ Authors: Rémy Degenne
 -/
 module
 
+public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+public import Mathlib.Analysis.SumIntegralComparisons
 public import LeanMachineLearning.Online.Bandit.Algorithms.UCB
 public import LeanMachineLearning.Online.Bandit.SumRewards
 
@@ -265,16 +267,54 @@ lemma pullCount_ae_le_add_two (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) 
   refine (hω_le).trans_eq ?_
   rw [hω_zero]
 
-/-- A sum that appears in the UCB regret upper bound, with a finite limit as `n` goes to infinity
-for `c > 2`. -/
+/-- A sum that appears in the UCB regret upper bound. For `c > 2` it is bounded uniformly in `n`,
+see `constSum_le`. -/
 noncomputable
-def constSum (c : ℝ) (n : ℕ) : ℝ≥0∞ := ∑ s ∈ range n, 1 / ((s : ℝ≥0∞) + 1) ^ (c - 1)
+def constSum (c : ℝ) (n : ℕ) : ℝ := ∑ s ∈ range n, 1 / ((s : ℝ) + 1) ^ (c - 1)
 
-lemma constSum_lt_top (c : ℝ) (n : ℕ) : constSum c n < ∞ := by
-  rw [constSum, ENNReal.sum_lt_top]
-  intro k hk
-  simp only [one_div, ENNReal.inv_lt_top]
-  positivity
+lemma constSum_nonneg (c : ℝ) (n : ℕ) : 0 ≤ constSum c n :=
+  Finset.sum_nonneg fun _ _ ↦ by positivity
+
+lemma ofReal_constSum (c : ℝ) (n : ℕ) :
+    ENNReal.ofReal (constSum c n) = ∑ s ∈ range n, 1 / ((s : ℝ≥0∞) + 1) ^ (c - 1) := by
+  rw [constSum, ENNReal.ofReal_sum_of_nonneg (fun s _ ↦ by positivity)]
+  refine Finset.sum_congr rfl fun s _ ↦ ?_
+  rw [one_div, one_div, ENNReal.ofReal_inv_of_pos (by positivity),
+    ← ENNReal.ofReal_rpow_of_pos (by positivity), ENNReal.ofReal_add (by positivity) zero_le_one,
+    ENNReal.ofReal_natCast, ENNReal.ofReal_one]
+
+/-- For `c > 2`, the sum `constSum c n` is at most `1 + 1 / (c - 2)`, uniformly in `n`. -/
+lemma constSum_le {c : ℝ} (hc : 2 < c) (n : ℕ) : constSum c n ≤ 1 + 1 / (c - 2) := by
+  have hc2 : 0 < c - 2 := by linarith
+  cases n with
+  | zero => simp only [constSum, range_zero, sum_empty]; positivity
+  | succ m =>
+    -- Comparison of the sum with the integral of `x ↦ x ^ (-(c - 1))` on `[1, 1 + m]`.
+    have h_anti : AntitoneOn (fun x : ℝ ↦ x ^ (-(c - 1))) (Set.Icc 1 (1 + m)) :=
+      (antitoneOn_rpow_Ioi_of_exponent_nonpos (by linarith)).mono
+        fun x hx ↦ zero_lt_one.trans_le hx.1
+    have h_sum := AntitoneOn.sum_le_integral h_anti
+    rw [integral_rpow (Or.inr ⟨by linarith, ?_⟩)] at h_sum
+    swap
+    · rw [Set.uIcc_of_le (le_add_of_nonneg_right (by positivity))]
+      simp
+    have h_pow_nonneg : 0 ≤ (1 + (m : ℝ)) ^ (-(c - 1) + 1) := Real.rpow_nonneg (by positivity) _
+    calc constSum c (m + 1)
+    _ = 1 + ∑ i ∈ range m, (1 + ((i + 1 : ℕ) : ℝ)) ^ (-(c - 1)) := by
+      rw [constSum, Finset.sum_range_succ', add_comm]
+      congr 1
+      · simp
+      · refine Finset.sum_congr rfl fun i _ ↦ ?_
+        rw [Real.rpow_neg (by positivity), one_div]
+        push_cast
+        ring_nf
+    _ ≤ 1 + ((1 + m) ^ (-(c - 1) + 1) - 1 ^ (-(c - 1) + 1)) / (-(c - 1) + 1) := by gcongr
+    _ = 1 + (1 - (1 + m) ^ (-(c - 1) + 1)) / (c - 2) := by
+      rw [Real.one_rpow]
+      congr 1
+      rw [div_eq_div_iff (by linarith) hc2.ne']
+      ring
+    _ ≤ 1 + 1 / (c - 2) := by gcongr; linarith
 
 /-- Bound on the expectation of the number of pulls of each arm by the UCB algorithm. -/
 lemma expectation_pullCount_le'
@@ -282,7 +322,8 @@ lemma expectation_pullCount_le'
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 < c) (a : Fin K) (h_gap : 0 < gap ν a) (n : ℕ) :
     ∫⁻ ω, pullCount A a n ω ∂P ≤
-      ENNReal.ofReal (8 * c * σ2 * log (n + 1) / gap ν a ^ 2 + 1) + 1 + 2 * constSum c n := by
+      ENNReal.ofReal (8 * c * σ2 * log (n + 1) / gap ν a ^ 2 + 1) + 1 +
+        2 * ENNReal.ofReal (constSum c n) := by
   have hA := h.measurable_action
   have hR := h.measurable_feedback
   by_cases hn_zero : n = 0
@@ -350,8 +391,9 @@ lemma expectation_pullCount_le'
       grind
     · refine (measure_mono ?_).trans (prob_ucbIndex_ge h hν hσ2 (by positivity) a s)
       grind
-  _ ≤ ENNReal.ofReal (8 * c * σ2 * log (n + 1) / gap ν a ^ 2 + 1) + 1 + 2 * constSum c n := by
-    rw [two_mul, add_assoc, constSum]
+  _ ≤ ENNReal.ofReal (8 * c * σ2 * log (n + 1) / gap ν a ^ 2 + 1) + 1 +
+      2 * ENNReal.ofReal (constSum c n) := by
+    rw [two_mul, add_assoc, ofReal_constSum]
     gcongr
     simp only [C]
     rw [← ENNReal.ofReal_natCast]
@@ -365,7 +407,7 @@ lemma expectation_pullCount_le (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2))
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 < c) (a : Fin K) (h_gap : 0 < gap ν a) (n : ℕ) :
     P[fun ω ↦ (pullCount A a n ω : ℝ)] ≤
-      8 * c * σ2 * log (n + 1) / gap ν a ^ 2 + 2 + 2 * (constSum c n).toReal := by
+      8 * c * σ2 * log (n + 1) / gap ν a ^ 2 + 2 + 2 * constSum c n := by
   have hA := h.measurable_action
   have h := expectation_pullCount_le' h hν hσ2 hc a h_gap n
   simp_rw [← ENNReal.ofReal_natCast] at h
@@ -375,19 +417,11 @@ lemma expectation_pullCount_le (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2))
   · exact ae_of_all _ fun _ ↦ by simp
   simp only
   have : 0 ≤ log (n + 1) := log_nonneg (by simp)
-  rw [← ENNReal.ofReal_toReal (a := 2 * constSum c n), ← ENNReal.ofReal_one, ← ENNReal.ofReal_add,
-    ← ENNReal.ofReal_add, ENNReal.ofReal_le_ofReal_iff] at h
-  rotate_left
-  · positivity
-  · positivity
-  · simp
-  · have : constSum c n ≠ ∞ := (constSum_lt_top c n).ne
-    finiteness
-  · simp
-  · have : constSum c n ≠ ∞ := (constSum_lt_top c n).ne
-    finiteness
+  have h_nonneg : 0 ≤ 2 * constSum c n := mul_nonneg zero_le_two (constSum_nonneg c n)
+  rw [← ENNReal.ofReal_one, ← ENNReal.ofReal_ofNat 2, ← ENNReal.ofReal_mul zero_le_two,
+    ← ENNReal.ofReal_add (by positivity) zero_le_one, ← ENNReal.ofReal_add (by positivity) h_nonneg,
+    ENNReal.ofReal_le_ofReal_iff (add_nonneg (by positivity) h_nonneg)] at h
   refine h.trans_eq ?_
-  simp only [ENNReal.toReal_mul, ENNReal.toReal_ofNat, add_left_inj]
   ring
 
 /-- Regret bound for the UCB algorithm. -/
@@ -395,7 +429,7 @@ theorem regret_le (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryE
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 < c) (n : ℕ) :
     P[regret ν A n] ≤
-      ∑ a, (8 * c * σ2 * log (n + 1) / gap ν a + gap ν a * (2 + 2 * (constSum c n).toReal)) := by
+      ∑ a, (8 * c * σ2 * log (n + 1) / gap ν a + gap ν a * (2 + 2 * constSum c n)) := by
   refine (integral_regret_le_of_forall_integral_pullCount_le h
     (fun a h_gap ↦ expectation_pullCount_le h hν hσ2 hc a
       (lt_of_le_of_ne' gap_nonneg h_gap) n)).trans_eq ?_
@@ -403,6 +437,19 @@ theorem regret_le (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryE
   by_cases h_gap : gap ν a = 0
   · simp [h_gap]
   · field
+
+/-- Regret bound for the UCB algorithm with an explicit constant, for `c > 2`. -/
+theorem regret_le_of_two_lt (h : IsAlgEnvSeq O A R (ucbAlgorithm K (c * σ2)) (stationaryEnv ν) P)
+    (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
+    (hσ2 : σ2 ≠ 0) (hc : 2 < c) (n : ℕ) :
+    P[regret ν A n] ≤
+      ∑ a, (8 * c * σ2 * log (n + 1) / gap ν a + gap ν a * (4 + 2 / (c - 2))) := by
+  refine (regret_le h hν hσ2 (by linarith) n).trans (Finset.sum_le_sum fun a _ ↦ ?_)
+  have h_le : 2 + 2 * constSum c n ≤ 4 + 2 / (c - 2) := by
+    have := constSum_le hc n
+    rw [show (4 : ℝ) + 2 / (c - 2) = 2 + 2 * (1 + 1 / (c - 2)) by ring]
+    gcongr
+  exact add_le_add le_rfl (mul_le_mul_of_nonneg_left h_le (gap_nonneg (ν := ν) (a := a)))
 
 end UCB
 
