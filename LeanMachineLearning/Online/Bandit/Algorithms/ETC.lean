@@ -70,7 +70,7 @@ lemma isAlgEnvSeqUntil_roundRobinAlgorithm
 
 section AlgorithmBehavior
 
-lemma arm_ae_eq_etcNextArm (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P) (n : ℕ) :
+lemma arm_ae_eq_nextArm (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P) (n : ℕ) :
     A n =ᵐ[P] fun ω ↦ nextArm K m n (history O A R n ω) :=
   h.action_detAlgorithm_ae_eq n
 
@@ -85,14 +85,14 @@ phase. -/
 lemma arm_mul
     (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P) :
     A (K * m) =ᵐ[P] fun ω ↦ argmax (empMean' (K * m) (history O A R (K * m) ω)) := by
-  filter_upwards [arm_ae_eq_etcNextArm h (K * m)] with ω hn_eq
+  filter_upwards [arm_ae_eq_nextArm h (K * m)] with ω hn_eq
   rw [hn_eq, nextArm, dite_eq_right (by simp), dite_eq_left rfl]
 
 /-- For `n ≥ K * m`, the arm pulled at time `n + 1` is the same as the arm pulled at time `n`. -/
 lemma arm_add_one_of_ge (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     {n : ℕ} (hn : K * m ≤ n) :
     A (n + 1) =ᵐ[P] fun ω ↦ A n ω := by
-  filter_upwards [arm_ae_eq_etcNextArm h (n + 1)] with ω hn_eq
+  filter_upwards [arm_ae_eq_nextArm h (n + 1)] with ω hn_eq
   rw [hn_eq, nextArm, dite_eq_right (by grind), dite_eq_right (by grind)]
   rfl
 

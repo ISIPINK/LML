@@ -96,7 +96,7 @@ lemma arm_zero (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) :
     A 0 =ᵐ[P] fun _ ↦ 0 :=
   RoundRobin.action_zero ((isAlgEnvSeqUntil_roundRobinAlgorithm h).mono (Nat.pos_of_neZero K))
 
-lemma arm_ae_eq_ucbNextArm (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) (n : ℕ) :
+lemma arm_ae_eq_nextArm (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) (n : ℕ) :
     A n =ᵐ[P] fun ω ↦ nextArm K c n (history O A R n ω) :=
   h.action_detAlgorithm_ae_eq n
 
@@ -104,7 +104,7 @@ lemma ucbIndex_le_ucbIndex_arm
     (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) (a : Fin K) (hn : K ≤ n) :
     ∀ᵐ ω ∂P, empMean A R a n ω + ucbWidth A c a n ω ≤
       empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω := by
-  filter_upwards [arm_ae_eq_ucbNextArm h n] with ω h_arm
+  filter_upwards [arm_ae_eq_nextArm h n] with ω h_arm
   have h_not_lt : ¬ n < K := by grind
   simp only [nextArm, h_not_lt, ↓reduceIte] at h_arm
   simp_rw [h_arm, empMean_eq_empMean' (O := O), ucbWidth_eq_ucbWidth' (O := O) (A := A) (R := R)]
@@ -115,7 +115,7 @@ lemma forall_arm_eq_mod_of_lt (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (station
     ∀ᵐ ω ∂P, ∀ n < K, A n ω = RoundRobin.nextAction K n := by
   simp_rw [ae_all_iff]
   intro n hn
-  filter_upwards [arm_ae_eq_ucbNextArm h n] with ω h_eq
+  filter_upwards [arm_ae_eq_nextArm h n] with ω h_eq
   rw [h_eq]
   simp only [nextArm, hn, ↓reduceIte]
 
