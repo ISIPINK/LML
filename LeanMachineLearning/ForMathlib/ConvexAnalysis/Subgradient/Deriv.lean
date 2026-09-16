@@ -64,10 +64,7 @@ lemma _root_.HasFDerivAt.tendsto_bregDiv_slope_zero
 
 variable [OrderClosedTopology F]
 
-/--
-For a convex function `f : E → F`, if `f` has a Fréchet derivative at `x` represented by the
-continuous linear map `g`, then `g` is a subgradient of `f` at `x` over the set `V`.
--/
+/-- A Fréchet derivative of a convex function is a subgradient. -/
 lemma _root_.HasFDerivAt.mem_subdifferential
     (hderiv : HasFDerivAt f g x) (hf : ConvexOn ℝ V f) (hx : x ∈ V) :
     (g : E →+ F) ∈ ∂[V, x] f := by
@@ -84,10 +81,6 @@ section Real
 
 variable {f : E → ℝ} {g h : E →L[ℝ] ℝ}
 
-/--
-If `f : E → ℝ` has Fréchet derivative `g` at an interior point `x` of `V`,
-then any continuous linear subgradient `h ∈ ∂[V, x] f` satisfies `h w ≤ g w` for all directions `w`.
--/
 lemma _root_.HasFDerivAt.le_of_mem_subdifferential
     (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : (h : E →+ ℝ) ∈ ∂[V, x] f) (w : E) :
     h w ≤ g w := by
@@ -100,10 +93,7 @@ lemma _root_.HasFDerivAt.le_of_mem_subdifferential
     inv_mul_cancel_left₀ ht_pos.ne'] using
     mul_le_mul_of_nonneg_left (sub_nonneg.mp (hsub.2 (x + t • w) ht_V)) (inv_nonneg.mpr ht_pos.le)
 
-/--
-If `f : E → ℝ` has Fréchet derivative `g` at an interior point `x` of `V`,
-then the subgradient is unique and equal to `g`.
--/
+/-- Uniqueness of the subgradient at an interior differentiable point. -/
 lemma _root_.HasFDerivAt.eq_of_mem_subdifferential
     (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : (h : E →+ ℝ) ∈ ∂[V, x] f) :
     h = g := by
