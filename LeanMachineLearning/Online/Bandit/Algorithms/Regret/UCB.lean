@@ -126,32 +126,6 @@ lemma prob_ucbIndex_ge {alg : Algorithm Unit (Fin K) ℝ}
     rw [ENNReal.rpow_sub _ _ (by simp) (by finiteness), ENNReal.rpow_one, div_eq_mul_inv,
       ENNReal.div_eq_inv_mul, ENNReal.mul_inv (by simp) (by simp), inv_inv]
 
-lemma probReal_ucbIndex_le {alg : Algorithm Unit (Fin K) ℝ}
-    (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
-    (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
-    (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
-    P.real {ω | 0 < pullCount A a n ω ∧ empMean A R a n ω + ucbWidth A (c * σ2) a n ω ≤ (ν a)[id]} ≤
-      1 / (n + 1) ^ (c - 1) := by
-  rw [measureReal_def]
-  grw [prob_ucbIndex_le h hν hσ2 hc a n]
-  swap; · finiteness
-  simp only [one_div, ENNReal.toReal_inv]
-  rw [← ENNReal.toReal_rpow]
-  norm_cast
-
-lemma probReal_ucbIndex_ge {alg : Algorithm Unit (Fin K) ℝ}
-    (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
-    (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
-    (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
-    P.real {ω | 0 < pullCount A a n ω ∧
-      (ν a)[id] ≤ empMean A R a n ω - ucbWidth A (c * σ2) a n ω} ≤ 1 / (n + 1) ^ (c - 1) := by
-  rw [measureReal_def]
-  grw [prob_ucbIndex_ge h hν hσ2 hc a n]
-  swap; · finiteness
-  simp only [one_div, ENNReal.toReal_inv]
-  rw [← ENNReal.toReal_rpow]
-  norm_cast
-
 omit [IsMarkovKernel ν] in
 lemma pullCount_le_add_three (a : Fin K) (n C : ℕ) (ω : Ω) :
     pullCount A a n ω ≤ C + 1 +

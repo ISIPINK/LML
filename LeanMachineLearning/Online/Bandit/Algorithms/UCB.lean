@@ -38,10 +38,9 @@ lemma UCB.measurable_ucbWidth' (c : ℝ) (n : ℕ) (a : Fin K) :
   unfold ucbWidth'
   fun_prop
 
-variable (K) in
 /-- Arm pulled by the UCB algorithm at time `n`, as a function of the history before `n`. -/
 noncomputable
-def UCB.nextArm [NeZero K] (c : ℝ) (n : ℕ) (h : Hist Unit (Fin K) ℝ n) : Fin K :=
+def UCB.nextArm (K : ℕ) [NeZero K] (c : ℝ) (n : ℕ) (h : Hist Unit (Fin K) ℝ n) : Fin K :=
   if n < K then RoundRobin.nextAction K n else
   argmax (fun a ↦ empMean' n h a + ucbWidth' c n h a)
 
@@ -101,10 +100,6 @@ lemma arm_ae_eq_ucbNextArm (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationary
     A n =ᵐ[P] fun ω ↦ nextArm K c n (history O A R n ω) :=
   h.action_detAlgorithm_ae_eq n
 
-lemma arm_ae_all_eq (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) :
-    ∀ᵐ ω ∂P, ∀ n, A n ω = nextArm K c n (history O A R n ω) :=
-  ae_all_iff.mpr (arm_ae_eq_ucbNextArm h)
-
 lemma ucbIndex_le_ucbIndex_arm
     (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) (a : Fin K) (hn : K ≤ n) :
     ∀ᵐ ω ∂P, empMean A R a n ω + ucbWidth A c a n ω ≤
@@ -131,21 +126,6 @@ lemma forall_ucbIndex_le_ucbIndex_arm
         empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω := by
   simp_rw [ae_all_iff]
   exact fun _ ↦ ucbIndex_le_ucbIndex_arm h a
-
-lemma forall_arm_prop
-    (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) :
-    ∀ᵐ ω ∂P,
-      (∀ n < K, A n ω = RoundRobin.nextAction K n) ∧
-      (∀ n, K ≤ n → ∀ a, empMean A R a n ω + ucbWidth A c a n ω ≤
-        empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω) := by
-  simp only [eventually_and]
-  constructor
-  · exact forall_arm_eq_mod_of_lt h
-  · simp_rw [ae_all_iff]
-    intro n hn a
-    have h_ae := forall_ucbIndex_le_ucbIndex_arm h a
-    simp_rw [ae_all_iff] at h_ae
-    exact h_ae n hn
 
 lemma time_gt_of_pullCount_gt_one
     (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) (a : Fin K) :

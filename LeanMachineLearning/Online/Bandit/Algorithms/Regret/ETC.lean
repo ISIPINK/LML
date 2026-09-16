@@ -64,10 +64,10 @@ lemma expectation_pullCount_le (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (statio
       ≤ m + (n - K * m) * Real.exp (- (m : ℝ) * gap ν a ^ 2 / (4 * σ2)) := by
   have hA := h.measurable_action
   have : (fun ω ↦ (pullCount A a n ω : ℝ))
-      =ᵐ[P] fun ω ↦ m + (n - K * m) * {ω' | A (K * m) ω' = a}.indicator (fun _ ↦ 1) ω := by
+      =ᵐ[P] fun ω ↦ m + (n - K * m) * {ω' | A (K * m) ω' = a}.indicator 1 ω := by
     filter_upwards [pullCount_of_ge h a hn] with ω h
-    simp only [h, Set.indicator_apply, Set.mem_ofPred_eq, mul_ite, mul_one, mul_zero, Nat.cast_add,
-      Nat.cast_ite, CharP.cast_eq_zero, add_right_inj]
+    simp only [h, Set.indicator_apply, Set.mem_ofPred_eq, Pi.one_apply, mul_ite, mul_one, mul_zero,
+      Nat.cast_add, Nat.cast_ite, CharP.cast_eq_zero, add_right_inj]
     norm_cast
   rw [integral_congr_ae this, integral_add (integrable_const _), integral_const_mul]
   swap
@@ -79,7 +79,7 @@ lemma expectation_pullCount_le (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (statio
   gcongr
   · norm_cast
     simp
-  rw [integral_indicator_const, smul_eq_mul, mul_one]
+  rw [integral_indicator_one]
   · rw [← neg_mul]
     exact prob_arm_mul_eq_le h hν a hm
   · exact (measurableSet_singleton _).preimage (by fun_prop)

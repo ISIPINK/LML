@@ -115,7 +115,7 @@ lemma pullCount_mul (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν)
 lemma pullCount_add_one_of_ge (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     (a : Fin K) {n : ℕ} (hn : K * m ≤ n) :
     pullCount A a (n + 1)
-      =ᵐ[P] fun ω ↦ pullCount A a n ω + {ω' | A (K * m) ω' = a}.indicator (fun _ ↦ 1) ω := by
+      =ᵐ[P] fun ω ↦ pullCount A a n ω + {ω' | A (K * m) ω' = a}.indicator 1 ω := by
   simp_rw [Filter.EventuallyEq, pullCount_add_one]
   filter_upwards [arm_of_ge h hn] with ω h_arm
   congr 3
@@ -125,9 +125,9 @@ lemma pullCount_add_one_of_ge (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (station
 lemma pullCount_of_ge (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     (a : Fin K) {n : ℕ} (hn : K * m ≤ n) :
     pullCount A a n
-      =ᵐ[P] fun ω ↦ m + (n - K * m) * {ω' | A (K * m) ω' = a}.indicator (fun _ ↦ 1) ω := by
+      =ᵐ[P] fun ω ↦ m + (n - K * m) * {ω' | A (K * m) ω' = a}.indicator 1 ω := by
   have h_ae n : K * m ≤ n → pullCount A a (n + 1)
-      =ᵐ[P] fun ω ↦ pullCount A a n ω + {ω' | A (K * m) ω' = a}.indicator (fun _ ↦ 1) ω :=
+      =ᵐ[P] fun ω ↦ pullCount A a n ω + {ω' | A (K * m) ω' = a}.indicator 1 ω :=
     pullCount_add_one_of_ge h a
   simp_rw [Filter.EventuallyEq, ← ae_all_iff] at h_ae
   have h_ae_Km : pullCount A a (K * m) =ᵐ[P] fun _ ↦ m := pullCount_mul h a
