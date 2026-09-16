@@ -41,7 +41,7 @@ lemma probReal_sumRewards_le_sumRewards_le
   simp [ha, h_best]
 
 /-- The probability that at time `K * m` the ETC algorithm chooses arm `a` is at most
-`exp(- m * Δ_a^2 / 4)`. -/
+`exp(- m * Δ_a^2 / (4 * σ2))`. -/
 lemma prob_arm_mul_eq_le (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a)) (a : Fin K)
     (hm : m ≠ 0) :

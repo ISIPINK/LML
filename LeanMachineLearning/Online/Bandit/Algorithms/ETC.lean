@@ -143,11 +143,11 @@ lemma pullCount_of_ge (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv �
 arm `a` is at least the total reward obtained by pulling the best arm. -/
 lemma sumRewards_bestArm_le_of_arm_mul_eq
     (h : IsAlgEnvSeq O A R (etcAlgorithm K m) (stationaryEnv ν) P) (a : Fin K) (hm : m ≠ 0) :
-    ∀ᵐ h ∂P, A (K * m) h = a → sumRewards A R (bestArm ν) (K * m) h ≤
-      sumRewards A R a (K * m) h := by
+    ∀ᵐ ω ∂P, A (K * m) ω = a → sumRewards A R (bestArm ν) (K * m) ω ≤
+      sumRewards A R a (K * m) ω := by
   filter_upwards [arm_mul h, pullCount_mul h a, pullCount_mul h (bestArm ν)]
-    with h h_arm ha h_best h_eq
-  have h_max := isMaxOn_argmax (empMean' (K * m) (history O A R (K * m) h)) (bestArm ν)
+    with ω h_arm ha h_best h_eq
+  have h_max := isMaxOn_argmax (empMean' (K * m) (history O A R (K * m) ω)) (bestArm ν)
   rw [← h_arm, h_eq] at h_max
   rw [sumRewards_eq_pullCount_mul_empMean, sumRewards_eq_pullCount_mul_empMean, ha, h_best]
   · gcongr

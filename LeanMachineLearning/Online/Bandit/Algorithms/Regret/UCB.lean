@@ -78,7 +78,7 @@ lemma prob_ucbIndex_le {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
-    P {h | 0 < pullCount A a n h ∧ empMean A R a n h + ucbWidth A (c * σ2) a n h ≤ (ν a)[id]} ≤
+    P {ω | 0 < pullCount A a n ω ∧ empMean A R a n ω + ucbWidth A (c * σ2) a n ω ≤ (ν a)[id]} ≤
       1 / (n + 1) ^ (c - 1) := by
   have h_le := prob_pullCount_pos_and_le h a n
     (p := fun k x ↦ x / k + √(2 * c * σ2 * log (n + 1) / k) ≤ (ν a)[id])
@@ -105,8 +105,8 @@ lemma prob_ucbIndex_ge {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
-    P {h | 0 < pullCount A a n h ∧
-      (ν a)[id] ≤ empMean A R a n h - ucbWidth A (c * σ2) a n h} ≤ 1 / (n + 1) ^ (c - 1) := by
+    P {ω | 0 < pullCount A a n ω ∧
+      (ν a)[id] ≤ empMean A R a n ω - ucbWidth A (c * σ2) a n ω} ≤ 1 / (n + 1) ^ (c - 1) := by
   have h_le := prob_pullCount_pos_and_le h a n
     (p := fun k x ↦ (ν a)[id] ≤ x / k - √(2 * c * σ2 * log (n + 1) / k))
     (B := 1 / (n + 1) ^ c) ?_ ?_
@@ -130,7 +130,7 @@ lemma probReal_ucbIndex_le {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
-    P.real {h | 0 < pullCount A a n h ∧ empMean A R a n h + ucbWidth A (c * σ2) a n h ≤ (ν a)[id]} ≤
+    P.real {ω | 0 < pullCount A a n ω ∧ empMean A R a n ω + ucbWidth A (c * σ2) a n ω ≤ (ν a)[id]} ≤
       1 / (n + 1) ^ (c - 1) := by
   rw [measureReal_def]
   grw [prob_ucbIndex_le h hν hσ2 hc a n]
@@ -143,8 +143,8 @@ lemma probReal_ucbIndex_ge {alg : Algorithm Unit (Fin K) ℝ}
     (h : IsAlgEnvSeq O A R alg (stationaryEnv ν) P)
     (hν : ∀ a, HasSubgaussianMGF (fun x ↦ x - (ν a)[id]) σ2 (ν a))
     (hσ2 : σ2 ≠ 0) (hc : 0 ≤ c) (a : Fin K) (n : ℕ) :
-    P.real {h | 0 < pullCount A a n h ∧
-      (ν a)[id] ≤ empMean A R a n h - ucbWidth A (c * σ2) a n h} ≤ 1 / (n + 1) ^ (c - 1) := by
+    P.real {ω | 0 < pullCount A a n ω ∧
+      (ν a)[id] ≤ empMean A R a n ω - ucbWidth A (c * σ2) a n ω} ≤ 1 / (n + 1) ^ (c - 1) := by
   rw [measureReal_def]
   grw [prob_ucbIndex_ge h hν hσ2 hc a n]
   swap; · finiteness
@@ -329,20 +329,20 @@ lemma expectation_pullCount_le'
   by_cases hn_zero : n = 0
   · simp [hn_zero]
   let C a : ℕ := ⌈8 * c * σ2 * log (n + 1) / gap ν a ^ 2⌉₊
-  have h_set_1 b : MeasurableSet {a_1 | 0 < pullCount A a b a_1 ∧
-      (ν a)[id] < empMean A R a b a_1 - ucbWidth A (c * σ2) a b a_1} := by
+  have h_set_1 b : MeasurableSet {ω | 0 < pullCount A a b ω ∧
+      (ν a)[id] < empMean A R a b ω - ucbWidth A (c * σ2) a b ω} := by
     simp only [measurableSet_setOfPred]
     fun_prop
-  have h_set_2 b : MeasurableSet {a | 0 < pullCount A (bestArm ν) b a ∧
-      empMean A R (bestArm ν) b a + ucbWidth A (c * σ2) (bestArm ν) b a < (ν (bestArm ν))[id]} := by
+  have h_set_2 b : MeasurableSet {ω | 0 < pullCount A (bestArm ν) b ω ∧
+      empMean A R (bestArm ν) b ω + ucbWidth A (c * σ2) (bestArm ν) b ω < (ν (bestArm ν))[id]} := by
     simp only [measurableSet_setOfPred]
     fun_prop
-  have h_meas_1 b : Measurable fun h ↦ {s | 0 < pullCount A a s h ∧ (ν a)[id] <
-      empMean A R a s h - ucbWidth A (c * σ2) a s h}.indicator (1 : ℕ → ℕ) b := by
+  have h_meas_1 b : Measurable fun ω ↦ {s | 0 < pullCount A a s ω ∧ (ν a)[id] <
+      empMean A R a s ω - ucbWidth A (c * σ2) a s ω}.indicator (1 : ℕ → ℕ) b := by
     simp only [id_eq, Set.indicator_apply, Set.mem_ofPred_eq, Pi.one_apply]
     exact Measurable.ite (h_set_1 _) (by fun_prop) (by fun_prop)
-  have h_meas_2 b : Measurable fun h ↦ {s | 0 < pullCount A (bestArm ν) s h ∧
-      empMean A R (bestArm ν) s h + ucbWidth A (c * σ2) (bestArm ν) s h <
+  have h_meas_2 b : Measurable fun ω ↦ {s | 0 < pullCount A (bestArm ν) s ω ∧
+      empMean A R (bestArm ν) s ω + ucbWidth A (c * σ2) (bestArm ν) s ω <
           (ν (bestArm ν))[id]}.indicator (1 : ℕ → ℕ) b := by
     simp only [id_eq, Set.indicator_apply, Set.mem_ofPred_eq, Pi.one_apply]
     exact Measurable.ite (h_set_2 _) (by fun_prop) (by fun_prop)
@@ -377,11 +377,11 @@ lemma expectation_pullCount_le'
     gcongr with k hk k hk
     · rw [← lintegral_indicator_one]
       swap; · exact h_set_2 _
-      gcongr with h
+      gcongr with ω
       simp [Set.indicator_apply]
     · rw [← lintegral_indicator_one]
       swap; · exact h_set_1 _
-      gcongr with h
+      gcongr with ω
       simp [Set.indicator_apply]
   _ ≤ (C a : ℝ≥0∞) + 1 +
       ∑ s ∈ range n, 1 / ((s : ℝ≥0∞) + 1) ^ (c - 1) +

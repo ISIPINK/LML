@@ -102,42 +102,42 @@ lemma arm_ae_eq_ucbNextArm (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationary
   h.action_detAlgorithm_ae_eq n
 
 lemma arm_ae_all_eq (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) :
-    ∀ᵐ h ∂P, ∀ n, A n h = nextArm K c n (history O A R n h) :=
+    ∀ᵐ ω ∂P, ∀ n, A n ω = nextArm K c n (history O A R n ω) :=
   ae_all_iff.mpr (arm_ae_eq_ucbNextArm h)
 
 lemma ucbIndex_le_ucbIndex_arm
     (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) (a : Fin K) (hn : K ≤ n) :
-    ∀ᵐ h ∂P, empMean A R a n h + ucbWidth A c a n h ≤
-      empMean A R (A n h) n h + ucbWidth A c (A n h) n h := by
-  filter_upwards [arm_ae_eq_ucbNextArm h n] with h h_arm
+    ∀ᵐ ω ∂P, empMean A R a n ω + ucbWidth A c a n ω ≤
+      empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω := by
+  filter_upwards [arm_ae_eq_ucbNextArm h n] with ω h_arm
   have h_not_lt : ¬ n < K := by grind
   simp only [nextArm, h_not_lt, ↓reduceIte] at h_arm
   simp_rw [h_arm, empMean_eq_empMean' (O := O), ucbWidth_eq_ucbWidth' (O := O) (A := A) (R := R)]
-  exact isMaxOn_argmax (fun a ↦ empMean' n (history O A R n h) a
-    + ucbWidth' c n (history O A R n h) a) _
+  exact isMaxOn_argmax (fun a ↦ empMean' n (history O A R n ω) a
+    + ucbWidth' c n (history O A R n ω) a) _
 
 lemma forall_arm_eq_mod_of_lt (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) :
-    ∀ᵐ h ∂P, ∀ n < K, A n h = RoundRobin.nextAction K n := by
+    ∀ᵐ ω ∂P, ∀ n < K, A n ω = RoundRobin.nextAction K n := by
   simp_rw [ae_all_iff]
   intro n hn
-  filter_upwards [arm_ae_eq_ucbNextArm h n] with h h_eq
+  filter_upwards [arm_ae_eq_ucbNextArm h n] with ω h_eq
   rw [h_eq]
   simp only [nextArm, hn, ↓reduceIte]
 
 lemma forall_ucbIndex_le_ucbIndex_arm
     (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) (a : Fin K) :
-    ∀ᵐ h ∂P, ∀ n, K ≤ n →
-      empMean A R a n h + ucbWidth A c a n h ≤
-        empMean A R (A n h) n h + ucbWidth A c (A n h) n h := by
+    ∀ᵐ ω ∂P, ∀ n, K ≤ n →
+      empMean A R a n ω + ucbWidth A c a n ω ≤
+        empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω := by
   simp_rw [ae_all_iff]
   exact fun _ ↦ ucbIndex_le_ucbIndex_arm h a
 
 lemma forall_arm_prop
     (h : IsAlgEnvSeq O A R (ucbAlgorithm K c) (stationaryEnv ν) P) :
-    ∀ᵐ h ∂P,
-      (∀ n < K, A n h = RoundRobin.nextAction K n) ∧
-      (∀ n, K ≤ n → ∀ a, empMean A R a n h + ucbWidth A c a n h ≤
-        empMean A R (A n h) n h + ucbWidth A c (A n h) n h) := by
+    ∀ᵐ ω ∂P,
+      (∀ n < K, A n ω = RoundRobin.nextAction K n) ∧
+      (∀ n, K ≤ n → ∀ a, empMean A R a n ω + ucbWidth A c a n ω ≤
+        empMean A R (A n ω) n ω + ucbWidth A c (A n ω) n ω) := by
   simp only [eventually_and]
   constructor
   · exact forall_arm_eq_mod_of_lt h
