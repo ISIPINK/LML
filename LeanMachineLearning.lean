@@ -51,6 +51,10 @@ public import LeanMachineLearning.Online.Bandit.BayesRegret
 public import LeanMachineLearning.Online.Bandit.Regret
 public import LeanMachineLearning.Online.Bandit.RewardByCountMeasure
 public import LeanMachineLearning.Online.Bandit.SumRewards
+public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.bounds.OptimalityTerm
+public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.Definition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.Sequential
+public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.StrongLemmas
 public import LeanMachineLearning.SequentialLearning.ActionIndicator
 public import LeanMachineLearning.SequentialLearning.Algorithm
 public import LeanMachineLearning.SequentialLearning.AlgorithmDensity
