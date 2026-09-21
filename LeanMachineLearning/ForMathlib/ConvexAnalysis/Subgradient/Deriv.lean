@@ -41,7 +41,7 @@ open Asymptotics Filter
 
 /-- Scaled Bregman divergence monotonicity along segments for convex functions. -/
 lemma _root_.ConvexOn.bregDiv_slope_le (hf : ConvexOn ℝ V f)
-    {z : E} (hx : x ∈ V) (hz : z ∈ V) (J : E →ₗ[ℝ] F)
+    {z : E} (hx : x ∈ V) (hz : z ∈ V) (J : E →L[ℝ] F)
     {t : ℝ} (ht0 : 0 < t) (ht1 : t ≤ 1) :
     t⁻¹ • D_[f](x + t • (z - x), x, J) ≤ D_[f](z, x, J) := by
   have : (1 - t) • x + t • z = x + t • (z - x) := by module
@@ -55,7 +55,7 @@ omit [PartialOrder F] [IsOrderedAddMonoid F] [PosSMulMono ℝ F] in
 scaled by `t⁻¹` converges to `0`. -/
 lemma _root_.HasFDerivAt.tendsto_bregDiv_slope_zero
     (hderiv : HasFDerivAt f g x) (w : E) :
-    Tendsto (fun t : ℝ ↦ t⁻¹ • D_[f](x + t • w, x, (g : E →+ F))) (𝓝[>] 0) (𝓝 0) := by
+    Tendsto (fun t : ℝ ↦ t⁻¹ • D_[f](x + t • w, x, g)) (𝓝[>] 0) (𝓝 0) := by
   have h := (hderiv.hasLineDerivAt w).tendsto_slope_zero_right.sub_const (g w)
   rw [sub_self] at h
   refine h.congr' ?_
@@ -67,14 +67,14 @@ variable [OrderClosedTopology F]
 /-- A Fréchet derivative of a convex function is a subgradient. -/
 lemma _root_.HasFDerivAt.mem_subdifferential
     (hderiv : HasFDerivAt f g x) (hf : ConvexOn ℝ V f) (hx : x ∈ V) :
-    (g : E →+ F) ∈ ∂[V, x] f := by
+    g ∈ ∂[V, x] f := by
   refine ⟨hx, fun z hz ↦ le_of_tendsto (hderiv.tendsto_bregDiv_slope_zero (z - x)) ?_⟩
   filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds (eventually_le_nhds zero_lt_one)]
-    with t (ht0 : 0 < t) ht1 using hf.bregDiv_slope_le hx hz g.toLinearMap ht0 ht1
+    with t (ht0 : 0 < t) ht1 using hf.bregDiv_slope_le hx hz g ht0 ht1
 
 lemma subgradient_of_hasFDerivAt
     (hf : ConvexOn ℝ V f) (hx : x ∈ V) (hderiv : HasFDerivAt f g x) :
-    (g : E →+ F) ∈ ∂[V, x] f :=
+    g ∈ ∂[V, x] f :=
   hderiv.mem_subdifferential hf hx
 
 section Real
@@ -82,7 +82,7 @@ section Real
 variable {f : E → ℝ} {g h : E →L[ℝ] ℝ}
 
 lemma _root_.HasFDerivAt.le_of_mem_subdifferential
-    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : (h : E →+ ℝ) ∈ ∂[V, x] f) (w : E) :
+    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : h ∈ ∂[V, x] f) (w : E) :
     h w ≤ g w := by
   have h_nhds : (fun t : ℝ ↦ x + t • w) ⁻¹' V ∈ 𝓝 0 :=
     (continuous_const.add (continuous_id'.smul continuous_const)).continuousAt.preimage_mem_nhds
@@ -95,7 +95,7 @@ lemma _root_.HasFDerivAt.le_of_mem_subdifferential
 
 /-- Uniqueness of the subgradient at an interior differentiable point. -/
 lemma _root_.HasFDerivAt.eq_of_mem_subdifferential
-    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : (h : E →+ ℝ) ∈ ∂[V, x] f) :
+    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : h ∈ ∂[V, x] f) :
     h = g := by
   ext v
   exact le_antisymm (hderiv.le_of_mem_subdifferential hV hsub v)
@@ -109,20 +109,21 @@ and `f₂` is convex on `V`: `g` is a subgradient of `f₁ + f₂` at `x` if and
 lemma _root_.HasFDerivAt.mem_subdifferential_add_iff {f₁ f₂ : E → ℝ}
     {g₁ g : E →L[ℝ] ℝ}
     (hderiv₁ : HasFDerivAt f₁ g₁ x) (hf₁ : ConvexOn ℝ V f₁) (hf₂ : ConvexOn ℝ V f₂) (hx : x ∈ V) :
-    (g : E →+ ℝ) ∈ ∂[V, x] (f₁ + f₂) ↔ (g - g₁ : E →+ ℝ) ∈ ∂[V, x] f₂ := by
-  have h_eq : (g : E →+ ℝ) = (g₁ : E →+ ℝ) + (g - g₁ : E →+ ℝ) := by ext; simp
+    g ∈ ∂[V, x] (f₁ + f₂) ↔ (g - g₁) ∈ ∂[V, x] f₂ := by
+  have h_eq : g = g₁ + (g - g₁) := by ext; simp
   constructor
   · rintro ⟨-, hg⟩
     refine ⟨hx, fun z hz ↦ le_of_tendsto
       (by simpa using (hderiv₁.tendsto_bregDiv_slope_zero (z - x)).neg) ?_⟩
     filter_upwards [self_mem_nhdsWithin,
       nhdsWithin_le_nhds (eventually_le_nhds zero_lt_one)] with t (ht0 : 0 < t) ht1
-    have h_slope : t⁻¹ • D_[f₂](x + t • (z - x), x, (g - g₁ : E →+ ℝ)) ≤
-        D_[f₂](z, x, (g - g₁ : E →+ ℝ)) :=
-      hf₂.bregDiv_slope_le hx hz (g - g₁).toLinearMap ht0 ht1
+    have h_slope : t⁻¹ • D_[f₂](x + t • (z - x), x, g - g₁) ≤
+        D_[f₂](z, x, g - g₁) :=
+      hf₂.bregDiv_slope_le hx hz (g - g₁) ht0 ht1
     have h_nonneg := smul_nonneg (inv_nonneg.mpr ht0.le)
       (hg _ (hf₂.1.add_smul_sub_mem hx hz ⟨ht0.le, ht1⟩))
-    rw [h_eq, bregDiv_add, smul_add] at h_nonneg
+    have h_lin : g = g₁ + (g - g₁) := by ext; simp
+    rw [h_lin, bregDiv_add, smul_add] at h_nonneg
     dsimp at *
     linarith
   · intro h₂
@@ -133,7 +134,7 @@ lemma mem_subdifferential_add_hasFDerivAt_iff {f₁ f₂ : E → ℝ}
     {g₁ g : E →L[ℝ] ℝ}
     (hf₁ : ConvexOn ℝ V f₁) (hf₂ : ConvexOn ℝ V f₂) (hx : x ∈ V)
     (hderiv₁ : HasFDerivAt f₁ g₁ x) :
-    (g : E →+ ℝ) ∈ ∂[V, x] (f₁ + f₂) ↔ (g - g₁ : E →+ ℝ) ∈ ∂[V, x] f₂ :=
+    g ∈ ∂[V, x] (f₁ + f₂) ↔ (g - g₁) ∈ ∂[V, x] f₂ :=
   hderiv₁.mem_subdifferential_add_iff hf₁ hf₂ hx
 
 end Real
