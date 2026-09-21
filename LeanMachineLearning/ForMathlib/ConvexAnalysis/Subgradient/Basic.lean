@@ -63,13 +63,13 @@ def subdifferential (V : Set E) (f : E → F) (y : E) : Set (E →L[R] F) :=
   { g | IsSubgradient V f y g }
 
 /-- Scoped notation for `subdifferential`. -/
-scoped[Bregman] notation:60 "∂[" V ", " y "] " f:50 => Analysis.Convex.subdifferential V f y
+scoped[Bregman] notation "∂[" V ", " y "](" f ")" => Analysis.Convex.subdifferential V f y
 
 variable {V : Set E} {f : E → F} {y x : E} {g_y : E →L[R] F}
 
 @[simp]
 lemma mem_subdifferential_iff :
-    g_y ∈ ∂[V, y] f ↔ IsSubgradient V f y g_y := Iff.rfl
+    g_y ∈ ∂[V, y](f) ↔ IsSubgradient V f y g_y := Iff.rfl
 
 lemma isSubgradient_const (c : F) :
     IsSubgradient V (fun _ ↦ c) y (0 : E →L[R] F) := by
