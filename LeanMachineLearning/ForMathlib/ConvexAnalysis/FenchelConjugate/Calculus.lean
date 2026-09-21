@@ -11,15 +11,19 @@ public import LeanMachineLearning.ForMathlib.ConvexAnalysis.FenchelConjugate.Bas
 # Calculus of Fenchel Conjugates
 
 This file establishes algebraic transformation laws and calculus rules for
-the domain-constrained generalized Fenchel conjugate `f^*[s]`:
+the domain-constrained generalized Fenchel conjugate `f^*[s]`.
 
-1. **Constant Shifts:** $(f + c)^*[s](g) = f^*[s](g) - c$.
-2. **Linear Perturbations:** $(f + h)^*[s](g) = f^*[s](g - h)$.
-3. **Bregman Divergence Objectives:**
-   $(D_f(\cdot, y, g_y))^*[s](g) = f^*[s](g + g_y) - f^*[s](g_y)$.
-4. **Monotonicity & Order:** $f_1 \le f_2 \implies f_2^*[s] \le f_1^*[s]$ and
-   $s_1 \subseteq s_2 \implies f^*[s_1] \le f^*[s_2]$.
-5. **Support Functions:** $(0)^*[s](g) = \sup_{x \in s} g(x)$.
+## Main results
+
+* Constant shifts: `Analysis.Convex.fenchelConjugateWithin_add_const` and
+  `Analysis.Convex.fenchelConjugateWithin_sub_const`.
+* Linear perturbations: `Analysis.Convex.fenchelConjugateWithin_add_linear` and
+  `Analysis.Convex.fenchelConjugateWithin_sub_linear`.
+* Bregman divergence objectives: `Analysis.Convex.fenchelConjugateWithin_bregDiv` and
+  `Analysis.Convex.fenchelConjugateWithin_bregDiv_of_hasSubgradientWithinAt`.
+* Monotonicity and order: `Analysis.Convex.fenchelConjugateWithin_antitone` and
+  `Analysis.Convex.fenchelConjugateWithin_mono_set`.
+* Support functions: `Analysis.Convex.fenchelConjugateWithin_zero`.
 -/
 
 @[expose] public section
