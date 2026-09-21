@@ -50,12 +50,6 @@ scoped[Bregman] notation "D_[" f "](" x ", " y ", " J ")" => Analysis.Convex.bre
 
 open scoped Bregman
 
-/-- Unexpander for `bregDiv`. -/
-@[app_unexpander bregDiv]
-meta def unexpandBregDiv : Lean.PrettyPrinter.Unexpander
-  | `($_ $f $x $y $J) => `(D_[$f]($x, $y, $J))
-  | _                 => throw ()
-
 @[simp]
 lemma bregDiv_self :
     D_[f](x, x, J_x) = 0 := by

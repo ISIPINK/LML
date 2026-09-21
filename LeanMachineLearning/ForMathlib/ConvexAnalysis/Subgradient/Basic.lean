@@ -65,12 +65,6 @@ def subdifferential (V : Set E) (f : E → F) (y : E) : Set (E →L[R] F) :=
 /-- Scoped notation for `subdifferential`. -/
 scoped[Bregman] notation:60 "∂[" V ", " y "] " f:50 => Analysis.Convex.subdifferential V f y
 
-/-- Unexpander for `subdifferential`. -/
-@[app_unexpander subdifferential]
-meta def unexpandSubdifferential : Lean.PrettyPrinter.Unexpander
-  | `($_ $V $f $y) => `(∂[$V, $y] $f)
-  | _              => throw ()
-
 variable {V : Set E} {f : E → F} {y x : E} {g_y : E →L[R] F}
 
 @[local simp]
