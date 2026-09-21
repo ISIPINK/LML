@@ -13,17 +13,17 @@ public import Mathlib.Data.Set.Basic
 # Fréchet Derivatives and Subgradients
 
 This file establishes the connection between Fréchet derivatives (`HasFDerivAt`)
-and subgradients (`∂[V, x] f`) for convex functions.
+and subgradients (`IsSubgradient V f x g`) for convex functions.
 
 ## Main results
 
-* `HasFDerivAt.mem_subdifferential`: A Fréchet derivative of a convex function
+* `HasFDerivAt.isSubgradient`: A Fréchet derivative of a convex function
   is a subgradient.
-* `HasFDerivAt.le_of_mem_subdifferential`: An interior subgradient is bounded
+* `HasFDerivAt.le_of_isSubgradient`: An interior subgradient is bounded
   above by the Fréchet derivative.
-* `HasFDerivAt.eq_of_mem_subdifferential`: Uniqueness of subgradient at interior
+* `HasFDerivAt.eq_of_isSubgradient`: Uniqueness of subgradient at interior
   differentiable points.
-* `mem_subdifferential_add_hasFDerivAt_iff`: Subdifferential sum rule when one
+* `isSubgradient_add_hasFDerivAt_iff`: Subdifferential sum rule when one
   component is Fréchet differentiable.
 -/
 
@@ -65,24 +65,25 @@ lemma _root_.HasFDerivAt.tendsto_bregDiv_slope_zero
 variable [OrderClosedTopology F]
 
 /-- A Fréchet derivative of a convex function is a subgradient. -/
-lemma _root_.HasFDerivAt.mem_subdifferential
+lemma _root_.HasFDerivAt.isSubgradient
     (hderiv : HasFDerivAt f g x) (hf : ConvexOn ℝ V f) (hx : x ∈ V) :
-    g ∈ ∂[V, x] f := by
-  refine ⟨hx, fun z hz ↦ le_of_tendsto (hderiv.tendsto_bregDiv_slope_zero (z - x)) ?_⟩
+    IsSubgradient V f x g := by
+  intro z hz
+  refine le_of_tendsto (hderiv.tendsto_bregDiv_slope_zero (z - x)) ?_
   filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds (eventually_le_nhds zero_lt_one)]
     with t (ht0 : 0 < t) ht1 using hf.bregDiv_slope_le hx hz g ht0 ht1
 
-lemma subgradient_of_hasFDerivAt
+lemma isSubgradient_of_hasFDerivAt
     (hf : ConvexOn ℝ V f) (hx : x ∈ V) (hderiv : HasFDerivAt f g x) :
-    g ∈ ∂[V, x] f :=
-  hderiv.mem_subdifferential hf hx
+    IsSubgradient V f x g :=
+  hderiv.isSubgradient hf hx
 
 section Real
 
 variable {f : E → ℝ} {g h : E →L[ℝ] ℝ}
 
-lemma _root_.HasFDerivAt.le_of_mem_subdifferential
-    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : h ∈ ∂[V, x] f) (w : E) :
+lemma _root_.HasFDerivAt.le_of_isSubgradient
+    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : IsSubgradient V f x h) (w : E) :
     h w ≤ g w := by
   have h_nhds : (fun t : ℝ ↦ x + t • w) ⁻¹' V ∈ 𝓝 0 :=
     (continuous_const.add (continuous_id'.smul continuous_const)).continuousAt.preimage_mem_nhds
@@ -91,30 +92,30 @@ lemma _root_.HasFDerivAt.le_of_mem_subdifferential
   filter_upwards [nhdsWithin_le_nhds h_nhds, self_mem_nhdsWithin] with t ht_V (ht_pos : 0 < t)
   simpa [bregDiv, add_sub_cancel_left, h.map_smul, smul_eq_mul,
     inv_mul_cancel_left₀ ht_pos.ne'] using
-    mul_le_mul_of_nonneg_left (sub_nonneg.mp (hsub.2 (x + t • w) ht_V)) (inv_nonneg.mpr ht_pos.le)
+    mul_le_mul_of_nonneg_left (sub_nonneg.mp (hsub (x + t • w) ht_V)) (inv_nonneg.mpr ht_pos.le)
 
 /-- Uniqueness of the subgradient at an interior differentiable point. -/
-lemma _root_.HasFDerivAt.eq_of_mem_subdifferential
-    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : h ∈ ∂[V, x] f) :
+lemma _root_.HasFDerivAt.eq_of_isSubgradient
+    (hderiv : HasFDerivAt f g x) (hV : V ∈ 𝓝 x) (hsub : IsSubgradient V f x h) :
     h = g := by
   ext v
-  exact le_antisymm (hderiv.le_of_mem_subdifferential hV hsub v)
-    (by simpa using hderiv.le_of_mem_subdifferential hV hsub (-v))
+  exact le_antisymm (hderiv.le_of_isSubgradient hV hsub v)
+    (by simpa using hderiv.le_of_isSubgradient hV hsub (-v))
 
 /--
 Subdifferential sum rule when `f₁` is convex and Fréchet differentiable at `x`
 and `f₂` is convex on `V`: `g` is a subgradient of `f₁ + f₂` at `x` if and only if
 `g - g₁` is a subgradient of `f₂` at `x`.
 -/
-lemma _root_.HasFDerivAt.mem_subdifferential_add_iff {f₁ f₂ : E → ℝ}
+lemma _root_.HasFDerivAt.isSubgradient_add_iff {f₁ f₂ : E → ℝ}
     {g₁ g : E →L[ℝ] ℝ}
     (hderiv₁ : HasFDerivAt f₁ g₁ x) (hf₁ : ConvexOn ℝ V f₁) (hf₂ : ConvexOn ℝ V f₂) (hx : x ∈ V) :
-    g ∈ ∂[V, x] (f₁ + f₂) ↔ (g - g₁) ∈ ∂[V, x] f₂ := by
+    IsSubgradient V (f₁ + f₂) x g ↔ IsSubgradient V f₂ x (g - g₁) := by
   have h_eq : g = g₁ + (g - g₁) := by ext; simp
   constructor
-  · rintro ⟨-, hg⟩
-    refine ⟨hx, fun z hz ↦ le_of_tendsto
-      (by simpa using (hderiv₁.tendsto_bregDiv_slope_zero (z - x)).neg) ?_⟩
+  · intro hg z hz
+    refine le_of_tendsto
+      (by simpa using (hderiv₁.tendsto_bregDiv_slope_zero (z - x)).neg) ?_
     filter_upwards [self_mem_nhdsWithin,
       nhdsWithin_le_nhds (eventually_le_nhds zero_lt_one)] with t (ht0 : 0 < t) ht1
     have h_slope : t⁻¹ • D_[f₂](x + t • (z - x), x, g - g₁) ≤
@@ -127,15 +128,15 @@ lemma _root_.HasFDerivAt.mem_subdifferential_add_iff {f₁ f₂ : E → ℝ}
     dsimp at *
     linarith
   · intro h₂
-    have := IsSubgradient.add (hderiv₁.mem_subdifferential hf₁ hx) h₂
+    have := IsSubgradient.add (hderiv₁.isSubgradient hf₁ hx) h₂
     rwa [← h_eq] at this
 
-lemma mem_subdifferential_add_hasFDerivAt_iff {f₁ f₂ : E → ℝ}
+lemma isSubgradient_add_hasFDerivAt_iff {f₁ f₂ : E → ℝ}
     {g₁ g : E →L[ℝ] ℝ}
     (hf₁ : ConvexOn ℝ V f₁) (hf₂ : ConvexOn ℝ V f₂) (hx : x ∈ V)
     (hderiv₁ : HasFDerivAt f₁ g₁ x) :
-    g ∈ ∂[V, x] (f₁ + f₂) ↔ (g - g₁) ∈ ∂[V, x] f₂ :=
-  hderiv₁.mem_subdifferential_add_iff hf₁ hf₂ hx
+    IsSubgradient V (f₁ + f₂) x g ↔ IsSubgradient V f₂ x (g - g₁) :=
+  hderiv₁.isSubgradient_add_iff hf₁ hf₂ hx
 
 end Real
 
