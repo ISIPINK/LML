@@ -44,38 +44,38 @@ open scoped Bregman
 
 namespace Analysis.Convex
 
-variable {E : Type*} [AddCommGroup E]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-! ### Step Objectives -/
 
 /-- Objective for the optimistic prediction step at round $t$:
 $\eta h_t(x) + \psi_{t+1}(x) - \nabla \psi_t(\tilde{w}_t)(x)$. -/
-def optimisticPredictionObjective (η : ℝ) (h : E →+ ℝ) (ψ_next : E → ℝ) (gψ_anchor : E →+ ℝ)
+def optimisticPredictionObjective (η : ℝ) (h : E →L[ℝ] ℝ) (ψ_next : E → ℝ) (gψ_anchor : E →L[ℝ] ℝ)
     (x : E) : ℝ :=
   η * h x + ψ_next x - gψ_anchor x
 
 /-- Objective for the main loss update / unadjusted iterate $w_{t+1}$ at round $t$:
 $\eta g_t(x) + \varphi_t(x) + \psi_{t+1}(x) - \nabla \psi_t(\tilde{w}_t)(x)$. -/
-def anchorUpdateObjective (η : ℝ) (g : E →+ ℝ) (φ : E → ℝ) (ψ_next : E → ℝ)
-    (gψ_anchor : E →+ ℝ) (x : E) : ℝ :=
+def anchorUpdateObjective (η : ℝ) (g : E →L[ℝ] ℝ) (φ : E → ℝ) (ψ_next : E → ℝ)
+    (gψ_anchor : E →L[ℝ] ℝ) (x : E) : ℝ :=
   η * g x + φ x + ψ_next x - gψ_anchor x
 
 /-! ### Step Optimality Predicates via `IsMinOn` -/
 
 /-- Predicate stating that $v \in \mathcal{X}$ is a valid optimistic prediction at round $t$. -/
-def IsOptimisticPrediction (η : ℝ) (h : E →+ ℝ) (ψ_next : E → ℝ) (gψ_anchor : E →+ ℝ)
+def IsOptimisticPrediction (η : ℝ) (h : E →L[ℝ] ℝ) (ψ_next : E → ℝ) (gψ_anchor : E →L[ℝ] ℝ)
     (X : Set E) (v : E) : Prop :=
   IsMinOn (optimisticPredictionObjective η h ψ_next gψ_anchor) X v
 
 /-- Predicate stating that $w \in \mathcal{X}$ is a valid loss update / anchor iterate
 at round $t$. -/
-def IsAnchorUpdate (η : ℝ) (g : E →+ ℝ) (φ : E → ℝ) (ψ_next : E → ℝ) (gψ_anchor : E →+ ℝ)
+def IsAnchorUpdate (η : ℝ) (g : E →L[ℝ] ℝ) (φ : E → ℝ) (ψ_next : E → ℝ) (gψ_anchor : E →L[ℝ] ℝ)
     (X : Set E) (w : E) : Prop :=
   IsMinOn (anchorUpdateObjective η g φ ψ_next gψ_anchor) X w
 
 /-- Prediction step is the special case of an anchor update with potential $\varphi = 0$. -/
-lemma isOptimisticPrediction_iff_isAnchorUpdate (η : ℝ) (h : E →+ ℝ) (ψ_next : E → ℝ)
-    (gψ_anchor : E →+ ℝ) (X : Set E) (v : E) :
+lemma isOptimisticPrediction_iff_isAnchorUpdate (η : ℝ) (h : E →L[ℝ] ℝ) (ψ_next : E → ℝ)
+    (gψ_anchor : E →L[ℝ] ℝ) (X : Set E) (v : E) :
     IsOptimisticPrediction η h ψ_next gψ_anchor X v ↔
       IsAnchorUpdate η h 0 ψ_next gψ_anchor X v := by
   have : optimisticPredictionObjective η h ψ_next gψ_anchor =
@@ -86,7 +86,7 @@ lemma isOptimisticPrediction_iff_isAnchorUpdate (η : ℝ) (h : E →+ ℝ) (ψ_
 /-! ### Full Algorithm Step & Sequence Definition -/
 
 /-- Structure bundling the parameters of an Optimistic Centered OMD instance. -/
-structure OMDParams (E : Type*) [AddCommGroup E] where
+structure OMDParams (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] where
   /-- Decision set / constraint domain $\mathcal{X} \subseteq E$. -/
   X : Set E
   /-- Step size / learning rate $\eta > 0$. -/
@@ -94,11 +94,11 @@ structure OMDParams (E : Type*) [AddCommGroup E] where
   /-- Sequence of step regularizers $\psi_t$. -/
   ψ : ℕ → E → ℝ
   /-- Sequence of gradients / dual evaluation maps $\nabla \psi_t$. -/
-  gψ : ℕ → E → (E →+ ℝ)
+  gψ : ℕ → E → (E →L[ℝ] ℝ)
   /-- Sequence of centering potentials $\varphi_t$. -/
   φ : ℕ → E → ℝ
   /-- Sequence of centering gradients $\nabla \varphi_t$. -/
-  gφ : ℕ → E → (E →+ ℝ)
+  gφ : ℕ → E → (E →L[ℝ] ℝ)
   /-- Deterministic adjustment mappings $\operatorname{adjust}_t : E \to E$. -/
   adjust : ℕ → E → E
 
@@ -106,7 +106,7 @@ structure OMDParams (E : Type*) [AddCommGroup E] where
 - $v_t$ is the optimistic prediction from hint $h_t$ and anchor $\tilde{w}_t$.
 - $w_{t+1}$ is the primal loss update from $g_t$, $\varphi_t$, and anchor $\tilde{w}_t$.
 - $\tilde{w}_{t+1} = \operatorname{adjust}_t(w_{t+1})$ is the deterministic adjustment. -/
-structure OMDExecution (P : OMDParams E) (g h : ℕ → (E →+ ℝ))
+structure OMDExecution (P : OMDParams E) (g h : ℕ → (E →L[ℝ] ℝ))
     (v w w_tilde : ℕ → E) : Prop where
   /-- Prediction step is a minimizer over $\mathcal{X}$. -/
   prediction_min : ∀ t ≥ 1,

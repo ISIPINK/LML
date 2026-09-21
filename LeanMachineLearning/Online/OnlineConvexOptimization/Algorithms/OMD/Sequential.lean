@@ -37,13 +37,13 @@ open Learning
 
 namespace Analysis.Convex
 
-variable {E : Type*} [AddCommGroup E]
-  [mO : MeasurableSpace (E →+ ℝ)] [mA : MeasurableSpace E]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+  [mO : MeasurableSpace (E →L[ℝ] ℝ)] [mA : MeasurableSpace E]
 
 /-! ### History to State Reconstruction (Causal Trajectory) -/
 
 /-- Extract the sequence of past feedback subgradients from `Hist` up to round `n`. -/
-def subgradientFromHist (n : ℕ) (hist : Hist (E →+ ℝ) E (E →+ ℝ) n) (t : ℕ) : E →+ ℝ :=
+def subgradientFromHist (n : ℕ) (hist : Hist (E →L[ℝ] ℝ) E (E →L[ℝ] ℝ) n) (t : ℕ) : E →L[ℝ] ℝ :=
   if h : t < n then (hist ⟨t, h⟩).feedback else 0
 
 /-- Reconstruct the unadjusted and anchor iterates $(w_t, \tilde{w}_t)$ up to time `n`
@@ -52,8 +52,8 @@ from the history of past loss subgradients.
 - At round $t \to t+1$: uses subgradient $g_t$ from history, computes $w_{t+1}$,
   then applies `adjust`. -/
 noncomputable def anchorFromHist (P : OMDParams E) (w1 : E)
-    (argmin_anchor : (E →+ ℝ) → (E → ℝ) → (E → ℝ) → (E →+ ℝ) → E)
-    (n : ℕ) (hist : Hist (E →+ ℝ) E (E →+ ℝ) n) : ℕ → E
+    (argmin_anchor : (E →L[ℝ] ℝ) → (E → ℝ) → (E → ℝ) → (E →L[ℝ] ℝ) → E)
+    (n : ℕ) (hist : Hist (E →L[ℝ] ℝ) E (E →L[ℝ] ℝ) n) : ℕ → E
   | 0 => w1
   | 1 => w1
   | t + 1 =>
@@ -67,19 +67,19 @@ noncomputable def anchorFromHist (P : OMDParams E) (w1 : E)
 /-- The deterministic action function of OMD: given history up to round `n` and
 current hint `h_n`, computes the optimistic prediction $v_n \in \mathcal{X}$. -/
 noncomputable def omdNextAction (P : OMDParams E) (w1 : E)
-    (argmin_pred : (E →+ ℝ) → (E → ℝ) → (E →+ ℝ) → E)
-    (argmin_anchor : (E →+ ℝ) → (E → ℝ) → (E → ℝ) → (E →+ ℝ) → E)
-    (n : ℕ) (p : Hist (E →+ ℝ) E (E →+ ℝ) n × (E →+ ℝ)) : E :=
+    (argmin_pred : (E →L[ℝ] ℝ) → (E → ℝ) → (E →L[ℝ] ℝ) → E)
+    (argmin_anchor : (E →L[ℝ] ℝ) → (E → ℝ) → (E → ℝ) → (E →L[ℝ] ℝ) → E)
+    (n : ℕ) (p : Hist (E →L[ℝ] ℝ) E (E →L[ℝ] ℝ) n × (E →L[ℝ] ℝ)) : E :=
   let hint := p.2
   let anchor := anchorFromHist P w1 argmin_anchor n p.1 n
   argmin_pred hint (P.ψ (n + 1)) (P.gψ n anchor)
 
 /-- Instantiate Optimistic Centered OMD as a formal `Learning.Algorithm`. -/
 noncomputable def omdAlgorithm (P : OMDParams E) (w1 : E)
-    (argmin_pred : (E →+ ℝ) → (E → ℝ) → (E →+ ℝ) → E)
-    (argmin_anchor : (E →+ ℝ) → (E → ℝ) → (E → ℝ) → (E →+ ℝ) → E)
+    (argmin_pred : (E →L[ℝ] ℝ) → (E → ℝ) → (E →L[ℝ] ℝ) → E)
+    (argmin_anchor : (E →L[ℝ] ℝ) → (E → ℝ) → (E → ℝ) → (E →L[ℝ] ℝ) → E)
     (h_meas : ∀ n, Measurable (omdNextAction P w1 argmin_pred argmin_anchor n)) :
-    Algorithm (E →+ ℝ) E (E →+ ℝ) :=
+    Algorithm (E →L[ℝ] ℝ) E (E →L[ℝ] ℝ) :=
   detAlgorithm (omdNextAction P w1 argmin_pred argmin_anchor) h_meas
 
 /-! ### Trajectory Equalities -/
@@ -88,11 +88,11 @@ noncomputable def omdAlgorithm (P : OMDParams E) (w1 : E)
 is almost everywhere equal to the deterministic evaluation of `omdNextAction`. -/
 lemma omd_action_ae_eq {Ω : Type*} {mΩ : MeasurableSpace Ω}
     [MeasurableEq E] {P_meas : MeasureTheory.Measure Ω} [MeasureTheory.IsProbabilityMeasure P_meas]
-    {O : ℕ → Ω → (E →+ ℝ)} {A : ℕ → Ω → E} {Y : ℕ → Ω → (E →+ ℝ)}
-    {env : Environment (E →+ ℝ) E (E →+ ℝ)}
+    {O : ℕ → Ω → (E →L[ℝ] ℝ)} {A : ℕ → Ω → E} {Y : ℕ → Ω → (E →L[ℝ] ℝ)}
+    {env : Environment (E →L[ℝ] ℝ) E (E →L[ℝ] ℝ)}
     (P : OMDParams E) (w1 : E)
-    (argmin_pred : (E →+ ℝ) → (E → ℝ) → (E →+ ℝ) → E)
-    (argmin_anchor : (E →+ ℝ) → (E → ℝ) → (E → ℝ) → (E →+ ℝ) → E)
+    (argmin_pred : (E →L[ℝ] ℝ) → (E → ℝ) → (E →L[ℝ] ℝ) → E)
+    (argmin_anchor : (E →L[ℝ] ℝ) → (E → ℝ) → (E → ℝ) → (E →L[ℝ] ℝ) → E)
     (h_meas : ∀ n, Measurable (omdNextAction P w1 argmin_pred argmin_anchor n))
     (h_exec : IsAlgEnvSeq O A Y (omdAlgorithm P w1 argmin_pred argmin_anchor h_meas) env P_meas)
     (n : ℕ) :

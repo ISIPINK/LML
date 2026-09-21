@@ -60,7 +60,7 @@ open Finset
 
 namespace Analysis.Convex
 
-variable {E : Type*} [AddCommGroup E]
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-! ### Auxiliary Term Definitions -/
 
@@ -68,9 +68,9 @@ section AuxTerms
 
 variable (η : ℝ)
 variable (ψ φ : ℕ → E → ℝ)
-variable (gψ gφ : ℕ → E → (E →+ ℝ))
+variable (gψ gφ : ℕ → E → (E →L[ℝ] ℝ))
 variable (u w w_tilde v : ℕ → E)
-variable (g h : ℕ → (E →+ ℝ))
+variable (g h : ℕ → (E →L[ℝ] ℝ))
 variable (l : ℕ → E → ℝ)
 
 /-- Linearization error term: $- D_{l_t}(u_t, w_{t+1}, g_t)$. -/
@@ -102,7 +102,7 @@ def pathlengthTerm (t : ℕ) : ℝ :=
 
 /-- General first-order optimality deficit:
 $\langle \eta g + g\varphi + g\psi_{\text{next}} - g\psi_{\text{prev}}, u - w \rangle$. -/
-def firstOrderOptimalityTerm (η : ℝ) (g gφ gψ_next gψ_prev : E →+ ℝ) (u w : E) : ℝ :=
+def firstOrderOptimalityTerm (η : ℝ) (g gφ gψ_next gψ_prev : E →L[ℝ] ℝ) (u w : E) : ℝ :=
   (η • g + gφ + gψ_next - gψ_prev) (u - w)
 
 /-- Optimality deficit for anchor update under step regularizer $\psi_{t+1}$:
@@ -148,7 +148,7 @@ theorem strongOptimisticMirrorDescent (T : ℕ) :
     dsimp [optimalityTerm, optimisticOptimalityTerm, firstOrderOptimalityTerm,
       adjustmentTerm, shiftTerm, pathlengthTerm, optimisticStabilityTerm, centeringTerm,
       linearizationTerm, Analysis.Convex.bregDiv]
-    simp only [map_sub]
+    simp only [map_sub, add_apply, sub_apply, smul_apply, zero_apply, smul_eq_mul]
     ring
 
 end AuxTerms
