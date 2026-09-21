@@ -55,6 +55,9 @@ public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.Definition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.Sequential
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.StrongLemmas
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.regret
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.regularizer
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.stability
 public import LeanMachineLearning.SequentialLearning.ActionIndicator
 public import LeanMachineLearning.SequentialLearning.Algorithm
 public import LeanMachineLearning.SequentialLearning.AlgorithmDensity
