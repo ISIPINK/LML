@@ -6,10 +6,6 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Bregman.Basic
-public import Mathlib.Analysis.Convex.Function
-public import Mathlib.Order.ConditionallyCompleteLattice.Basic
-public import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.Basic
-public import Mathlib.Tactic
 
 /-!
 # Subgradients and Subdifferentials
@@ -23,30 +19,24 @@ while supporting constrained convex analysis.
 
 ## Main definitions
 
-* `Analysis.Convex.HasSubgradientWithinAt f g s x`: `g : E →L[R] F` is a subgradient of `f`
-  at `x` on `s`.
-* `Analysis.Convex.subdifferentialWithin f s x`: The subdifferential set `∂[s, x] (f)`.
+* `HasSubgradientWithinAt f g s x`: `g : E →L[R] F` is a subgradient of `f` at `x` on `s`.
+* `subdifferentialWithin R f s x`: The subdifferential set `∂[R, s, x](f)`.
 
 ## Main results
 
-* Monotonicity in the domain: `Analysis.Convex.HasSubgradientWithinAt.mono`.
-* Chain rules: `Analysis.Convex.HasSubgradientWithinAt.comp_affine` and
-  `Analysis.Convex.HasSubgradientWithinAt.comp`.
-* Equivalence with classical inequality: `Analysis.Convex.hasSubgradientWithinAt_iff_le`.
-* Fermat's rule: `Analysis.Convex.hasSubgradientWithinAt_zero_iff_isMinOn`.
-* Suprema and maxima: `Analysis.Convex.HasSubgradientWithinAt.max_left`,
-  `Analysis.Convex.HasSubgradientWithinAt.max_right`,
-  `Analysis.Convex.HasSubgradientWithinAt.finset_sup`,
-  and `Analysis.Convex.HasSubgradientWithinAt.ciSup`.
+* Monotonicity in the domain: `HasSubgradientWithinAt.mono`.
+* Chain rules: `HasSubgradientWithinAt.comp_affine` and `HasSubgradientWithinAt.comp`.
+* Equivalence with classical inequality: `hasSubgradientWithinAt_iff_le`.
+* Fermat's rule: `hasSubgradientWithinAt_zero_iff_isMinOn`.
+* Suprema and maxima: `HasSubgradientWithinAt.sup_left`, `HasSubgradientWithinAt.sup_right`,
+  `HasSubgradientWithinAt.finset_sup'`, and `HasSubgradientWithinAt.ciSup`.
 
 ## Notation
 
-* `∂[s, x] f`: Scoped notation in `Bregman` for `subdifferentialWithin f s x`.
+* `∂[R, s, x](f)`: Scoped notation in `Bregman` for `subdifferentialWithin R f s x`.
 -/
 
 @[expose] public section
-
-namespace Analysis.Convex
 
 open scoped Bregman
 
@@ -61,24 +51,26 @@ variable {R E E₁ F G : Type*} [Ring R]
 def HasSubgradientWithinAt (f : E → F) (g : E →L[R] F) (s : Set E) (x : E) : Prop :=
   ∀ y ∈ s, 0 ≤ D_[f](y, x, g)
 
-/-- The subdifferential `∂[s, x] f` of `f` at `x` on `s`. -/
+variable (R) in
+/-- The subdifferential `∂[R, s, x](f)` of `f` at `x` on `s`. -/
 def subdifferentialWithin (f : E → F) (s : Set E) (x : E) : Set (E →L[R] F) :=
   { g | HasSubgradientWithinAt f g s x }
 
 /-- Scoped notation for `subdifferentialWithin`. -/
-scoped[Bregman] notation "∂[" s ", " x "](" f ")" => Analysis.Convex.subdifferentialWithin f s x
+scoped[Bregman] notation "∂[" R ", " s ", " x "](" f ")" => subdifferentialWithin R f s x
 
 variable {s t : Set E} {f : E → F} {x y : E} {g : E →L[R] F}
 
 @[simp]
 lemma mem_subdifferentialWithin :
-    g ∈ ∂[s, x](f) ↔ HasSubgradientWithinAt f g s x := Iff.rfl
+    g ∈ ∂[R, s, x](f) ↔ HasSubgradientWithinAt f g s x := Iff.rfl
 
 lemma HasSubgradientWithinAt.mono
     (h : HasSubgradientWithinAt f g t x) (hst : s ⊆ t) :
     HasSubgradientWithinAt f g s x :=
   fun y hy ↦ h y (hst hy)
 
+@[simp]
 lemma hasSubgradientWithinAt_const (c : F) :
     HasSubgradientWithinAt (fun _ ↦ c) (0 : E →L[R] F) s x := by
   simp [HasSubgradientWithinAt]
@@ -121,14 +113,14 @@ lemma HasSubgradientWithinAt.comp_affine
   rw [bregDiv_comp_affine]
   exact h_sub (A y + b) (h_map y hy)
 
-/-- **Chain rule**: `g₂ ∘ g₁` is a subgradient of `f₂ ∘ f₁` when `g₂` is non-negative. -/
+/-- **Chain rule**: `g₂ ∘ g₁` is a subgradient of `f₂ ∘ f₁` when `g₂` is monotone. -/
 lemma HasSubgradientWithinAt.comp [Preorder G] [IsOrderedAddMonoid G]
     {f₂ : F → G} {f₁ : E → F} {g₂ : F →L[R] G} {g₁ : E →L[R] F}
     (h₂ : HasSubgradientWithinAt f₂ g₂ (f₁ '' s) (f₁ x)) (h₁ : HasSubgradientWithinAt f₁ g₁ s x)
-    (hg₂_nonneg : ∀ z ≥ 0, 0 ≤ g₂ z) :
+    (hg₂ : Monotone g₂) :
     HasSubgradientWithinAt (f₂ ∘ f₁) (g₂.comp g₁) s x := fun y hy ↦ by
   rw [bregDiv_comp]
-  exact add_nonneg (h₂ (f₁ y) ⟨y, hy, rfl⟩) (hg₂_nonneg _ (h₁ y hy))
+  exact add_nonneg (h₂ (f₁ y) ⟨y, hy, rfl⟩) (by grw [← hg₂ (h₁ y hy)]; simp)
 
 section OrderedGroup
 
@@ -139,7 +131,7 @@ lemma hasSubgradientWithinAt_iff_le :
     HasSubgradientWithinAt f g s x ↔ ∀ y ∈ s, f x + g (y - x) ≤ f y := by
   simp [HasSubgradientWithinAt, bregDiv, sub_sub, sub_nonneg]
 
-lemma HasSubgradientWithinAt.monotonicity [IsTopologicalAddGroup F] {g_x g_y : E →L[R] F}
+lemma HasSubgradientWithinAt.sub_apply_sub_nonneg [IsTopologicalAddGroup F] {g_x g_y : E →L[R] F}
     (hx : x ∈ s) (hy : y ∈ s)
     (hx_sub : HasSubgradientWithinAt f g_x s x) (hy_sub : HasSubgradientWithinAt f g_y s y) :
     0 ≤ (g_x - g_y) (x - y) := by
@@ -150,12 +142,14 @@ lemma hasSubgradientWithinAt_zero_iff_isMinOn :
     HasSubgradientWithinAt f (0 : E →L[R] F) s x ↔ IsMinOn f s x := by
   simp [HasSubgradientWithinAt, bregDiv, sub_nonneg, isMinOn_iff]
 
+@[to_fun]
 lemma HasSubgradientWithinAt.add [ContinuousAdd F] {f₁ f₂ : E → F} {g₁ g₂ : E →L[R] F}
     (h₁ : HasSubgradientWithinAt f₁ g₁ s x) (h₂ : HasSubgradientWithinAt f₂ g₂ s x) :
     HasSubgradientWithinAt (f₁ + f₂) (g₁ + g₂) s x := fun y hy ↦ by
   rw [bregDiv_add]
   exact add_nonneg (h₁ y hy) (h₂ y hy)
 
+@[to_fun]
 lemma HasSubgradientWithinAt.add_isMinOn [ContinuousAdd F] {f₁ f₂ : E → F} {x : E} {g : E →L[R] F}
     (h_min : IsMinOn f₁ s x) (h_sub : HasSubgradientWithinAt f₂ g s x) :
     HasSubgradientWithinAt (f₁ + f₂) g s x := by
@@ -174,6 +168,7 @@ section ModuleBasic
 variable {R' : Type*} [CommRing R'] [PartialOrder R']
   [Module R' E] [Module R' F] [ContinuousConstSMul R' F] [PosSMulMono R' F]
 
+@[to_fun]
 lemma HasSubgradientWithinAt.smul {c : R'} (hc : 0 ≤ c) {f : E → F} {g : E →L[R'] F}
     (h_sub : HasSubgradientWithinAt f g s x) :
     HasSubgradientWithinAt (c • f) (c • g) s x := fun y hy ↦ by
@@ -184,44 +179,51 @@ end ModuleBasic
 
 section Module
 
-variable {R' : Type*} [CommRing R'] [PartialOrder R'] [IsOrderedRing R']
+variable {R' : Type*} [CommRing R'] [PartialOrder R']
     [Module R' E] [IsOrderedAddMonoid F] [Module R' F] [ContinuousConstSMul R' F] [PosSMulMono R' F]
     [ContinuousAdd F]
 
 lemma HasSubgradientWithinAt.convexCombination {f : E → F} {g₁ g₂ : E →L[R'] F}
     (h₁ : HasSubgradientWithinAt f g₁ s x) (h₂ : HasSubgradientWithinAt f g₂ s x)
-    {w : R'} (hw : w ∈ Set.Icc (0 : R') 1) :
-    HasSubgradientWithinAt f (w • g₁ + (1 - w) • g₂) s x := fun y hy ↦ by
-  rw [bregDiv_convexCombination]
-  exact add_nonneg (smul_nonneg hw.1 (h₁ y hy))
-    (smul_nonneg (sub_nonneg.mpr hw.2) (h₂ y hy))
+    {a b : R'} (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a + b = 1) :
+    HasSubgradientWithinAt f (a • g₁ + b • g₂) s x := fun y hy ↦ by
+  rw [bregDiv_convexCombination _ _ _ _ _ hab]
+  exact add_nonneg (smul_nonneg ha (h₁ y hy)) (smul_nonneg hb (h₂ y hy))
+
+lemma convex_subdifferentialWithin : Convex R' (∂[R', s, x](f)) := by
+  intro g₁ hg₁ g₂ hg₂ a b ha hb hab
+  simp only [mem_subdifferentialWithin] at hg₁ hg₂ ⊢
+  exact hg₁.convexCombination hg₂ ha hb hab
 
 end Module
 
-section LinearOrder
+section SemilatticeSup
 
 variable {F_lin : Type*} [AddCommGroup F_lin] [Module R F_lin] [TopologicalSpace F_lin]
-  [LinearOrder F_lin] [IsOrderedAddMonoid F_lin]
+  [SemilatticeSup F_lin] [IsOrderedAddMonoid F_lin]
 
-lemma HasSubgradientWithinAt.max_left {f₁ f₂ : E → F_lin} {g : E →L[R] F_lin}
-    (h_sub : HasSubgradientWithinAt f₁ g s x) (h_active : f₁ x = max (f₁ x) (f₂ x)) :
-    HasSubgradientWithinAt (fun y ↦ max (f₁ y) (f₂ y)) g s x :=
-  h_sub.of_le_of_eq (fun y _ ↦ le_max_left (f₁ y) (f₂ y)) h_active
+@[to_fun]
+lemma HasSubgradientWithinAt.sup_left {f₁ f₂ : E → F_lin} {g : E →L[R] F_lin}
+    (h_sub : HasSubgradientWithinAt f₁ g s x) (h_active : f₂ x ≤ f₁ x) :
+    HasSubgradientWithinAt (f₁ ⊔ f₂) g s x :=
+  h_sub.of_le_of_eq (fun y _ ↦ le_sup_left) (by simpa)
 
-lemma HasSubgradientWithinAt.max_right {f₁ f₂ : E → F_lin} {g : E →L[R] F_lin}
-    (h_sub : HasSubgradientWithinAt f₂ g s x) (h_active : f₂ x = max (f₁ x) (f₂ x)) :
-    HasSubgradientWithinAt (fun y ↦ max (f₁ y) (f₂ y)) g s x :=
-  h_sub.of_le_of_eq (fun y _ ↦ le_max_right (f₁ y) (f₂ y)) h_active
+@[to_fun]
+lemma HasSubgradientWithinAt.sup_right {f₁ f₂ : E → F_lin} {g : E →L[R] F_lin}
+    (h_sub : HasSubgradientWithinAt f₂ g s x) (h_active : f₁ x ≤ f₂ x) :
+    HasSubgradientWithinAt (f₁ ⊔ f₂) g s x :=
+  h_sub.of_le_of_eq (fun y _ ↦ le_sup_right) (by simpa)
 
-lemma HasSubgradientWithinAt.finset_sup {ι : Type*} {s_ι : Finset ι}
+lemma HasSubgradientWithinAt.finset_sup' {ι : Type*} {s_ι : Finset ι}
     {f_i : ι → E → F_lin} {i : ι} {g : E →L[R] F_lin}
     (his : i ∈ s_ι)
     (h_sub : HasSubgradientWithinAt (f_i i) g s x)
-    (h_active : f_i i x = s_ι.sup' ⟨i, his⟩ (fun j ↦ f_i j x)) :
-    HasSubgradientWithinAt (fun y ↦ s_ι.sup' ⟨i, his⟩ (fun j ↦ f_i j y)) g s x :=
-  h_sub.of_le_of_eq (fun _ _ ↦ Finset.le_sup'_of_le _ his (le_refl _)) h_active
+    (h_active : ∀ j ∈ s_ι, f_i j x ≤ f_i i x) :
+    HasSubgradientWithinAt (fun y ↦ s_ι.sup' ⟨i, his⟩ (f_i · y)) g s x := by
+  refine h_sub.of_le_of_eq (fun _ _ ↦ Finset.le_sup'_of_le _ his le_rfl) ?_
+  exact le_antisymm (Finset.le_sup' (f := fun j => f_i j x) his) (Finset.sup'_le _ _ h_active)
 
-end LinearOrder
+end SemilatticeSup
 
 section Lattice
 
@@ -231,10 +233,8 @@ variable {F_lat : Type*} [AddCommGroup F_lat] [Module R F_lat] [TopologicalSpace
 lemma HasSubgradientWithinAt.ciSup {ι : Type*} {f_i : ι → E → F_lat} {i : ι} {g : E →L[R] F_lat}
     (h_sub : HasSubgradientWithinAt (f_i i) g s x)
     (h_active : f_i i x = ⨆ j, f_i j x)
-    (h_bdd : ∀ y ∈ s, BddAbove (Set.range (fun j ↦ f_i j y))) :
+    (h_bdd : ∀ y ∈ s, BddAbove (Set.range (f_i · y))) :
     HasSubgradientWithinAt (fun y ↦ ⨆ j, f_i j y) g s x :=
   h_sub.of_le_of_eq (fun y hy ↦ le_ciSup (h_bdd y hy) i) h_active
 
 end Lattice
-
-end Analysis.Convex

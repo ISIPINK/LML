@@ -6,8 +6,7 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import Mathlib.Analysis.Convex.Function
-public import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.Basic
-public import Mathlib.Tactic
+public import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.PiProd
 
 /-!
 # Bregman Divergences
@@ -19,9 +18,9 @@ product rules, affine invariance, and convexity preservation.
 
 ## Main definitions
 
-* `Analysis.Convex.bregDiv f x y J`: The generalized vector-valued Bregman divergence
-  `f x - f y - J (x - y)` for a function `f : E → F` and
-  a continuous linear map `J : E →L[R] F` (e.g. a derivative, gradient, or subgradient).
+* `bregDiv f x y J`: The generalized vector-valued Bregman divergence `f x - f y - J (x - y)`
+  for a function `f : E → F` and a continuous linear map `J : E →L[R] F`
+  (e.g. a derivative, gradient, or subgradient).
 
 ## Notation
 
@@ -29,8 +28,6 @@ product rules, affine invariance, and convexity preservation.
 -/
 
 @[expose] public section
-
-namespace Analysis.Convex
 
 variable {R E E₁ E₂ F G : Type*} [Ring R]
   [AddCommGroup E] [Module R E] [TopologicalSpace E]
@@ -46,7 +43,7 @@ def bregDiv (f : E → F) (x y : E) (J : E →L[R] F) : F :=
   f x - f y - J (x - y)
 
 /-- Scoped notation for `bregDiv`. -/
-scoped[Bregman] notation "D_[" f "](" x ", " y ", " J ")" => Analysis.Convex.bregDiv f x y J
+scoped[Bregman] notation "D_[" f "](" x ", " y ", " J ")" => bregDiv f x y J
 
 open scoped Bregman
 
@@ -70,6 +67,7 @@ lemma bregDiv_fun_bregDiv [IsTopologicalAddGroup F] :
   simp only [bregDiv, map_sub, sub_apply]
   abel
 
+@[to_fun]
 lemma bregDiv_add [ContinuousAdd F] (f₁ f₂ : E → F) :
     D_[f₁ + f₂](x, y, J₁ + J₂) = D_[f₁](x, y, J₁) + D_[f₂](x, y, J₂) := by
   simp only [bregDiv, Pi.add_apply, add_apply, map_sub]
@@ -108,7 +106,7 @@ lemma bregDiv_add_linear [ContinuousAdd F] (h : E →L[R] F) :
   simp only [bregDiv, add_apply, map_sub]
   abel
 
-@[simp]
+@[to_fun (attr := simp)]
 lemma bregDiv_neg [IsTopologicalAddGroup F] :
     D_[-f](x, y, -J) = - D_[f](x, y, J) := by
   simp only [bregDiv, Pi.neg_apply, neg_apply, map_sub]
@@ -118,7 +116,7 @@ lemma bregDiv_comp_neg [IsTopologicalAddGroup F] :
     D_[fun z ↦ f (-z)](x, y, -J) = D_[f](-x, -y, J) := by
   simp [bregDiv, map_sub]
 
-lemma bregDiv_translate (x₀ : E) :
+lemma bregDiv_comp_add_right (x₀ : E) :
     D_[fun z ↦ f (z + x₀)](x, y, J) = D_[f](x + x₀, y + x₀, J) := by
   simp [bregDiv]
 
@@ -139,10 +137,11 @@ end ChainRules
 
 section CommRing
 
-variable {R' : Type*} [CommRing R'] [TopologicalSpace R'] [IsTopologicalAddGroup R']
-  [ContinuousSMul R' R'] [Module R' E]
+variable {R' : Type*} [CommRing R'] [TopologicalSpace R'] [ContinuousAdd R']
+  [ContinuousConstSMul R' R'] [Module R' E]
 
 /-- First-order product rule for Bregman divergences. -/
+@[to_fun]
 lemma bregDiv_mul (f₁ f₂ : E → R') (x y : E) (J₁ J₂ : E →L[R'] R') :
     D_[f₁ * f₂](x, y, f₂ y • J₁ + f₁ y • J₂) =
       D_[f₁](x, y, J₁) * f₂ y + f₁ y * D_[f₂](x, y, J₂) +
@@ -167,48 +166,36 @@ end Order
 
 section Module
 
-variable {R' : Type*} [CommRing R'] [Module R' E] [Module R' F]
-  [ContinuousAdd F] [ContinuousConstSMul R' F]
+variable {R' : Type*} [CommRing R'] [Module R' E] [Module R' F] [ContinuousConstSMul R' F]
 
-omit [ContinuousAdd F] in
 lemma bregDiv_smul (c : R') (f : E → F) (x y : E) (J : E →L[R'] F) :
     D_[c • f](x, y, c • J) = c • D_[f](x, y, J) := by
   simp [bregDiv, smul_sub]
 
-lemma bregDiv_convexCombination (f : E → F) (x y : E) (J₁ J₂ : E →L[R'] F) (w : R') :
-    D_[f](x, y, w • J₁ + (1 - w) • J₂) = w • D_[f](x, y, J₁) + (1 - w) • D_[f](x, y, J₂) := by
-  calc
-    D_[f](x, y, w • J₁ + (1 - w) • J₂)
-      = D_[(w + (1 - w)) • f](x, y, w • J₁ + (1 - w) • J₂) := by
-        rw [add_sub_cancel, one_smul]
-    _ = D_[w • f](x, y, w • J₁) + D_[(1 - w) • f](x, y, (1 - w) • J₂) := by
-      rw [add_smul, bregDiv_add]
-    _ = w • D_[f](x, y, J₁) + (1 - w) • D_[f](x, y, J₂) := by
-        simp only [bregDiv_smul]
+lemma bregDiv_convexCombination [ContinuousAdd F]
+    (f : E → F) (x y : E) (J₁ J₂ : E →L[R'] F) {a b : R'} (hab : a + b = 1) :
+    D_[f](x, y, a • J₁ + b • J₂) = a • D_[f](x, y, J₁) + b • D_[f](x, y, J₂) := by
+  calc D_[f](x, y, a • J₁ + b • J₂)
+  _ = D_[(a + b) • f](x, y, a • J₁ + b • J₂) := by rw [hab, one_smul]
+  _ = D_[a • f](x, y, a • J₁) + D_[b • f](x, y, b • J₂) := by rw [add_smul, bregDiv_add]
+  _ = a • D_[f](x, y, J₁) + b • D_[f](x, y, J₂) := by simp only [bregDiv_smul]
 
 end Module
 
 section Convexity
 
-variable {𝕜 E' F' : Type*} [Ring 𝕜] [PartialOrder 𝕜]
-variable [AddCommGroup E'] [Module 𝕜 E'] [TopologicalSpace E']
-variable [AddCommGroup F'] [Module 𝕜 F'] [TopologicalSpace F']
-  [PartialOrder F'] [IsOrderedAddMonoid F']
+variable [PartialOrder R] [PartialOrder F] [IsOrderedAddMonoid F]
 
 /-- If `f` is convex on `s`, then `x ↦ D_[f](x, y, J)` is convex on `s` for any
 continuous linear map `J`. -/
-lemma _root_.ConvexOn.bregDiv {s : Set E'} {f : E' → F'} (hf : ConvexOn 𝕜 s f)
-    (J : E' →L[𝕜] F') (y : E') :
-    ConvexOn 𝕜 s (fun x ↦ D_[f](x, y, J)) := by
-  simp only [Analysis.Convex.bregDiv, sub_eq_add_neg, map_add, map_neg, neg_add_rev, neg_neg]
+nonrec lemma ConvexOn.bregDiv {s : Set E} (hf : ConvexOn R s f) (J : E →L[R] F) (y : E) :
+    ConvexOn R s (fun x ↦ D_[f](x, y, J)) := by
+  simp only [bregDiv, sub_eq_add_neg, map_add, map_neg, neg_add_rev, neg_neg]
   apply ConvexOn.add
-  · apply ConvexOn.add
-    · exact hf
-    · exact convexOn_const (-f y) hf.1
+  · apply hf.add
+    exact convexOn_const (-f y) hf.1
   · apply ConvexOn.add
     · exact convexOn_const (J y) hf.1
     · exact (-J.toLinearMap).convexOn hf.1
 
 end Convexity
-
-end Analysis.Convex
