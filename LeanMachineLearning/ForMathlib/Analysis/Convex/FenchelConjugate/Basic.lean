@@ -5,7 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Subgradient.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 public import Mathlib.Algebra.Order.Group.CompleteLattice
 public import Mathlib.Analysis.Normed.Operator.Bilinear
 public import Mathlib.Order.ConditionallyCompleteLattice.Basic
@@ -21,9 +21,9 @@ membership and Fenchel–Young equality, and dual Bregman divergence identities.
 
 ## Main definitions
 
-* `Analysis.Convex.fenchelConjugateWithin f s`: The Fenchel conjugate
+* `fenchelConjugateWithin f s`: The Fenchel conjugate
   $f^*[s](g) = \sup_{x \in s} (g(x) - f(x))$.
-* `Analysis.Convex.rangeSubdifferentialWithin f s`: The range of the subdifferential operator
+* `rangeSubdifferentialWithin f s`: The range of the subdifferential operator
   $\bigcup_{y \in s} \partial[s, y] f$.
 
 ## Notation
@@ -32,18 +32,16 @@ membership and Fenchel–Young equality, and dual Bregman divergence identities.
 
 ## Main results
 
-* `Analysis.Convex.fenchel_young`: Fenchel–Young inequality $g(x) \le f(x) + f^*[s](g)$.
-* `Analysis.Convex.fenchel_young_eq`: Equivalence
+* `fenchel_young`: Fenchel–Young inequality $g(x) \le f(x) + f^*[s](g)$.
+* `fenchel_young_eq`: Equivalence
   $f(x) + f^*[s](g) = g(x) \iff g \in \partial[s, x] f$.
-* `Analysis.Convex.bregman_eq_dual_bregman`: Bregman duality
+* `bregman_eq_dual_bregman`: Bregman duality
   $D_f(x, y, g_y) = D_{f^*[s]}(g_y, g_x, x)$.
-* `Analysis.Convex.dual_subgradient`: Dual subgradient identity
+* `dual_subgradient`: Dual subgradient identity
   $x \in \partial[\text{rangeSubdifferentialWithin } f s, g_x] f^*[s]$.
 -/
 
 @[expose] public section
-
-namespace Analysis.Convex
 
 variable {R E F : Type*} [Ring R]
   [AddCommGroup E] [Module R E] [TopologicalSpace E]
@@ -58,7 +56,7 @@ noncomputable def fenchelConjugateWithin (f : E → F) (s : Set E) (g : E →L[R
   ⨆ x : s, (g x.1 - f x.1)
 
 /-- Scoped notation for Fenchel conjugate on a set `s`. -/
-scoped[Bregman] notation:max f "^*[" s "]" => Analysis.Convex.fenchelConjugateWithin f s
+scoped[Bregman] notation:max f "^*[" s "]" => fenchelConjugateWithin f s
 
 open scoped Bregman
 
@@ -133,5 +131,3 @@ lemma dual_subgradient {s : Set E} {f : E → F}
   fun _ ⟨_, hy, h_gy⟩ ↦ (bregman_eq_dual_bregman hx h_gx hy h_gy) ▸ h_gy x hx
 
 end NormedDual
-
-end Analysis.Convex

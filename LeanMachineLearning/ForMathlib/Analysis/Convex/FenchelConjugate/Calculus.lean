@@ -5,7 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.FenchelConjugate.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.FenchelConjugate.Basic
 
 /-!
 # Calculus of Fenchel Conjugates
@@ -15,20 +15,19 @@ the domain-constrained generalized Fenchel conjugate `f^*[s]`.
 
 ## Main results
 
-* Constant shifts: `Analysis.Convex.fenchelConjugateWithin_add_const` and
-  `Analysis.Convex.fenchelConjugateWithin_sub_const`.
-* Linear perturbations: `Analysis.Convex.fenchelConjugateWithin_add_linear` and
-  `Analysis.Convex.fenchelConjugateWithin_sub_linear`.
-* Bregman divergence objectives: `Analysis.Convex.fenchelConjugateWithin_bregDiv` and
-  `Analysis.Convex.fenchelConjugateWithin_bregDiv_of_hasSubgradientWithinAt`.
-* Monotonicity and order: `Analysis.Convex.fenchelConjugateWithin_antitone` and
-  `Analysis.Convex.fenchelConjugateWithin_mono_set`.
-* Support functions: `Analysis.Convex.fenchelConjugateWithin_zero`.
+* Constant shifts: `fenchelConjugateWithin_add_const` and
+  `fenchelConjugateWithin_sub_const`.
+* Linear perturbations: `fenchelConjugateWithin_add_linear` and
+  `fenchelConjugateWithin_sub_linear`.
+* Bregman divergence objectives: `fenchelConjugateWithin_bregDiv` and
+  `fenchelConjugateWithin_bregDiv_of_hasSubgradientWithinAt`.
+* Monotonicity and order: `fenchelConjugateWithin_antitone` and
+  `fenchelConjugateWithin_mono_set`.
+* Support functions: `fenchelConjugateWithin_zero`.
 -/
 
 @[expose] public section
 
-namespace Analysis.Convex
 
 variable {R E F : Type*} [Ring R]
   [AddCommGroup E] [Module R E] [TopologicalSpace E]
@@ -115,5 +114,3 @@ omit [IsOrderedAddMonoid F] in
 lemma fenchelConjugateWithin_zero (s : Set E) (g : E →L[R] F) :
     (fun _ : E ↦ (0 : F))^*[s] g = ⨆ x : s, g x.1 := by
   simp [fenchelConjugateWithin]
-
-end Analysis.Convex
