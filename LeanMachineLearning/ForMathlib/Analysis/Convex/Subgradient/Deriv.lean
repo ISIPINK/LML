@@ -5,7 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Subgradient.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 public import Mathlib.Analysis.Calculus.LineDeriv.Basic
 
 /-!

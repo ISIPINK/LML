@@ -5,7 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Bregman.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
 # Subgradients and Subdifferentials
