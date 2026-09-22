@@ -17,7 +17,7 @@ This file provides the second-order Mean Value Theorem (Lagrange remainder form)
 for generalized Bregman divergences `D_[f](x, y, J)`:
 
 * `exists_repeated_rolle`: Repeated Rolle's Theorem for an `n`-th order sequence of derivatives.
-* `Analysis.Convex.bregDiv_mvt`: If `f` is twice differentiable along
+* `bregDiv_mvt`: If `f` is twice differentiable along
   `segment ℝ x y`, then there exists `z ∈ segment ℝ x y` such that
   `D_[f](x, y, f' y) = 1/2 * f'' z (x - y) (x - y)`.
 -/
@@ -42,8 +42,6 @@ lemma exists_repeated_rolle (n : ℕ) {g : Fin (n + 2) → (ℝ → ℝ)} {b : �
       (fun k t ht ↦ hg_diff k.succ t ⟨ht.1, ht.2.trans (le_of_lt hc1.2)⟩)
       (fun k ↦ hg_zero k.succ) hc1_eq
     exact ⟨c, ⟨hc.1, hc.2.trans hc1.2⟩, hc_eq⟩
-
-namespace Analysis.Convex
 
 open scoped Bregman
 
@@ -81,5 +79,3 @@ theorem bregDiv_mvt
     (by simp [g, D, bregDiv])
   exact ⟨AffineMap.lineMap y x c, hp (Set.Ioo_subset_Icc_self hc),
     by linarith [show g 2 c = 0 from hc_eq]⟩
-
-end Analysis.Convex
