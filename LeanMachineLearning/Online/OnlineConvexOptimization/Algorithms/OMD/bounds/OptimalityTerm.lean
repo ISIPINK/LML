@@ -7,8 +7,8 @@ module
 
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.Definition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.StrongLemmas
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Subgradient.Basic
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Subgradient.Deriv
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
 public import Mathlib.Analysis.Calculus.FDeriv.Basic
 public import Mathlib.Analysis.Calculus.LineDeriv.Basic
 

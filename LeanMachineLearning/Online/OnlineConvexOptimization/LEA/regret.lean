@@ -55,7 +55,7 @@ lemma shiftTerm_eq_zero_of_const (ψ : ℕ → E → ℝ) (gψ : ℕ → E → (
     (w w_tilde : ℕ → E) (t : ℕ)
     (hψ : ψ (t + 1) = ψ t) (hgψ : gψ (t + 1) = gψ t) :
     shiftTerm ψ gψ w w_tilde t = 0 := by
-  dsimp [shiftTerm, Analysis.Convex.bregDiv]
+  dsimp [shiftTerm, bregDiv]
   simp [hψ, hgψ]
 
 /-- When the centering potential is identically zero ($\varphi_t = 0, \nabla \varphi_t = 0$),
@@ -64,7 +64,7 @@ lemma centeringTerm_eq_zero_of_zero (φ : ℕ → E → ℝ) (gφ : ℕ → E �
     (u w : ℕ → E) (t : ℕ)
     (hφ : φ t = 0) (hgφ : gφ t = 0) :
     centeringTerm φ gφ u w t = 0 := by
-  dsimp [centeringTerm, Analysis.Convex.bregDiv]
+  dsimp [centeringTerm, bregDiv]
   simp [hφ, hgφ]
 
 /-- When the comparator is static ($u_t = u$ for all $t$), the pathlength term

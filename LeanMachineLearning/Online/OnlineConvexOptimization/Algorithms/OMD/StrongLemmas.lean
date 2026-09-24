@@ -5,9 +5,12 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
+public import Mathlib.Analysis.Normed.Module.Basic
+public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
+public import Mathlib.Data.Real.Basic
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Data.Finset.Interval
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Bregman.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
 # Strong Centered Online Mirror Descent Regret Decomposition (Jacobsen Formulation)
@@ -157,7 +160,7 @@ theorem strongCenteredMirrorDescent (T : ℕ) :
   | succ T ih =>
     simp_rw [Finset.sum_Ico_succ_top (by omega : 1 ≤ T + 1), mul_add, ih]
     dsimp [optimalityTerm, adjustmentTerm, pathlengthTerm, stabilityTerm, centeringTerm,
-      shiftTerm, linearizationTerm, Analysis.Convex.bregDiv]
+      shiftTerm, linearizationTerm, bregDiv]
     simp only [map_sub, add_apply, sub_apply, smul_apply, smul_eq_mul]
     ring
 

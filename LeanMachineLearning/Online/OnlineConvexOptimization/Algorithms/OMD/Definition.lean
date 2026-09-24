@@ -5,9 +5,12 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
+public import Mathlib.Analysis.Normed.Module.Basic
+public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
+public import Mathlib.Data.Real.Basic
 public import Mathlib.Order.Filter.Basic
 public import Mathlib.Topology.Order.Basic
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Bregman.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
 # Centered Online Mirror Descent (COMD) Definition

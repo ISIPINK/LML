@@ -5,8 +5,8 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Bregman.Basic
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Bregman.MVT
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.MVT
 public import Mathlib.Analysis.Calculus.Deriv.Comp
 public import Mathlib.Analysis.Calculus.FDeriv.Add
 public import Mathlib.Analysis.Calculus.FDeriv.Comp

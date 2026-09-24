@@ -10,7 +10,7 @@ public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OMD.StrongLemmas
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.regularizer
-public import LeanMachineLearning.ForMathlib.ConvexAnalysis.Subgradient.Basic
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 
 /-!
 # Stability Bound for Linear Exponential Adaptation (LEA)
