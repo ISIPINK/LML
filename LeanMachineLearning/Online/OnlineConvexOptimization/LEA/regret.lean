@@ -11,9 +11,9 @@ public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.regularize
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.stability
 
 /-!
-# Regret Bound for Linear Exponential Adaptation (LEA)
+# Regret Bound for Learning with Expert Advice (LEA)
 
-This file sets up the regret decomposition for the Linear Exponential Adaptation (LEA)
+This file sets up the regret decomposition for the Learning with Expert Advice (LEA)
 algorithm, instantiating the Strong Centered Online Mirror Descent framework where:
 - The regularizer $\psi_t = \psi$ is constant (time-invariant unnormalized negative entropy).
 - There is no centering: $\varphi_t = 0$ (and $\nabla \varphi_t = 0$).
@@ -238,7 +238,7 @@ lemma sum_stabilityTerm_le {d : ℕ} (η : ℝ) (hη : 0 ≤ η)
 
 /-! ### Final LEA Regret Bound -/
 
-/-- **Linear Exponential Adaptation (LEA) Master Regret Bound**:
+/-- **Learning with Expert Advice (LEA) Master Regret Bound**:
 For any static comparator $u \in \mathcal{X}$, convex losses $l_t$, and unnormalized entropy
 regularizer $\psi$, the cumulative regret satisfies:
 $$\eta \sum_{t=1}^T (l_t(w_t) - l_t(u)) \le D_\psi(u, w_1) +

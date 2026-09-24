@@ -13,9 +13,9 @@ public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.regularize
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 
 /-!
-# Stability Bound for Linear Exponential Adaptation (LEA)
+# Stability Bound for Learning with Expert Advice (LEA)
 
-This file proves the local-norm stability bound for Linear Exponential Adaptation (LEA)
+This file proves the local-norm stability bound for Learning with Expert Advice (LEA)
 using Mathlib's Euclidean and inner product space Cauchy-Schwarz inequality.
 
 ## Main results
@@ -96,7 +96,7 @@ lemma dual_local_norm_eta_le (η : ℝ) (v : EuclideanSpace ℝ (Fin d)) (g : Fi
 
 /-! ### One-Round Stability Bound for LEA -/
 
-/-- One-round stability bound for Linear Exponential Adaptation:
+/-- One-round stability bound for Learning with Expert Advice:
 under loss convexity and MVT divergence representation,
 the one-round stability $\delta_t$ is upper bounded by the local dual norm
 $\frac{\eta^2}{2} \sum_i z_i (g_t)_i^2$. -/
