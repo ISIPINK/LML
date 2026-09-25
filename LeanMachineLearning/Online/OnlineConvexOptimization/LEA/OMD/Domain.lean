@@ -75,4 +75,25 @@ theorem convex_stdSimplex : Convex ℝ (stdSimplex (d := d)) := by
   simp_rw [PiLp.add_apply, PiLp.smul_apply, smul_eq_mul]
   rw [sum_add_distrib, ← mul_sum, ← mul_sum, hx.2, hy.2, mul_one, mul_one, hab]
 
+/-- The uniform distribution vector on `EuclideanSpace ℝ (Fin d)`:
+$$w_1 = \left( \frac{1}{d}, \dots, \frac{1}{d} \right)$$ -/
+noncomputable def uniformSimplex (d : ℕ) : EuclideanSpace ℝ (Fin d) :=
+  WithLp.toLp 2 (fun _ ↦ (1 : ℝ) / d)
+
+@[simp]
+lemma uniformSimplex_apply (i : Fin d) : uniformSimplex d i = (1 : ℝ) / d :=
+  rfl
+
+lemma uniformSimplex_pos (hd : 0 < d) (i : Fin d) : 0 < uniformSimplex d i := by
+  have hd_pos : (0 : ℝ) < d := Nat.cast_pos.mpr hd
+  exact div_pos zero_lt_one hd_pos
+
+/-- The uniform distribution lies in the standard simplex `stdSimplex`. -/
+theorem mem_stdSimplex_uniformSimplex (hd : 0 < d) : uniformSimplex d ∈ stdSimplex (d := d) := by
+  rw [mem_stdSimplex_iff]
+  refine ⟨fun i ↦ (uniformSimplex_pos hd i).le, ?_⟩
+  have hd_ne : (d : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hd.ne'
+  simp [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul, div_eq_inv_mul,
+    mul_inv_cancel₀ hd_ne]
+
 end Online.OCO.LEA.OMD

@@ -36,7 +36,7 @@ and four per-round regret terms:
 * `Online.OCO.LEA.OMD.stability`
 
 ## Main results
-* `Online.OCO.LEA.OMD.regretDecomposition`: The algebraic multi-round regret equality.
+* `Online.OCO.LEA.OMD.regret_decomposition_eq`: The algebraic multi-round regret equality.
 -/
 
 open scoped BigOperators Bregman
@@ -50,7 +50,6 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 section Terms
 
-variable (η : ℝ)
 variable (ψ : ℕ → E → ℝ)
 variable (gψ : ℕ → E → (E →L[ℝ] ℝ))
 variable (u : E)
@@ -64,37 +63,37 @@ def boundary (T : ℕ) : ℝ :=
   - D_[ψ (T + 1)](u, w (T + 1), gψ (T + 1) (w (T + 1)))
   + ψ (T + 1) u - ψ 1 u
 
-/-- Error incurred by linearizing the loss with subgradient `g_t`. -/
+/-- Error incurred by linearizing the loss with subgradient `g_t` at $w_t$. -/
 def linearization (t : ℕ) : ℝ :=
-  - D_[l t](u, w (t + 1), g t)
+  - D_[l t](u, w t, g t)
 
 /-- Potential shift accounting for changes in regularizers across rounds. -/
 def shift (t : ℕ) : ℝ :=
-  - (ψ (t + 1) - ψ t) (w t)
+  - (ψ (t + 1) - ψ t) (w (t + 1))
 
 /-- First-order optimality deficit of the update $w_{t+1}$. -/
 def optimality (t : ℕ) : ℝ :=
-  ((η : ℝ) • g t + gψ (t + 1) (w (t + 1)) - gψ t (w t)) (u - w (t + 1))
+  (g t + gψ (t + 1) (w (t + 1)) - gψ t (w t)) (u - w (t + 1))
 
 /-- Stability tradeoff between loss reduction and regularizer distance. -/
 def stability (t : ℕ) : ℝ :=
-  η * (l t (w t) - l t (w (t + 1))) - D_[ψ (t + 1)](w (t + 1), w t, gψ t (w t))
+  (g t) (w t - w (t + 1)) - D_[ψ t](w (t + 1), w t, gψ t (w t))
 
 /-- Exact multi-round algebraic regret decomposition for static, uncentered, unadjusted OMD. -/
-theorem regretDecomposition (T : ℕ) :
-    η * (∑ t ∈ Ico 1 (T + 1), (l t (w t) - l t u)) =
+theorem regret_decomposition_eq (T : ℕ) :
+    (∑ t ∈ Ico 1 (T + 1), (l t (w t) - l t u)) =
     boundary ψ gψ u w T
     + (∑ t ∈ Ico 1 (T + 1), shift ψ w t)
-    + (∑ t ∈ Ico 1 (T + 1), stability η ψ gψ w l t)
-    - (∑ t ∈ Ico 1 (T + 1), optimality η gψ u w g t)
-    + η * (∑ t ∈ Ico 1 (T + 1), linearization u w g l t) := by
+    + (∑ t ∈ Ico 1 (T + 1), stability ψ gψ w g t)
+    + (∑ t ∈ Ico 1 (T + 1), linearization u w g l t)
+    - (∑ t ∈ Ico 1 (T + 1), optimality gψ u w g t) := by
   induction T with
   | zero =>
     simp [boundary]
   | succ T ih =>
-    simp_rw [Finset.sum_Ico_succ_top (by omega : 1 ≤ T + 1), mul_add, ih]
+    simp_rw [Finset.sum_Ico_succ_top (by omega : 1 ≤ T + 1), ih]
     dsimp [boundary, optimality, shift, stability, linearization, bregDiv]
-    simp only [map_sub, add_apply, sub_apply, smul_apply, smul_eq_mul]
+    simp only [map_sub, add_apply, sub_apply]
     ring
 
 end Terms
