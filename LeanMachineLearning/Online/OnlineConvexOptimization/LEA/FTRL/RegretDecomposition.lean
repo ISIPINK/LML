@@ -9,6 +9,8 @@ public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Data.Finset.Interval
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
@@ -25,23 +27,22 @@ $$F_t(y) = \psi_t(y) + \sum_{i=1}^{t-1} g_i(y).$$
 
 Under these conditions, the regret is governed by the boundary drift and per-round terms:
 1. `boundary`: Terminal regularizer value at $u$ minus initial regularizer at $w_1$.
-2. `shift`: Cross-round regularizer potential drift on iterates $w_{t+1}$.
-3. `stability`: Stability tradeoff between loss reduction and regularizer Bregman divergence.
+2. `shift`: Cross-round regularizer potential drift on iterates $w_{t+1}$ (from `LEA.Common`).
+3. `stability`: Stability tradeoff between loss reduction and regularizer Bregman divergence
+   (from `LEA.Common`).
 4. `linearization`: Loss linearization error via subgradients $g_t$ at $w_t$.
 5. `optimality`: First-order optimality deficit of $w_t$ under objective $F_t$.
 6. `terminalOptimality`: Terminal optimality deficit of $w_{T+1}$ under objective $F_{T+1}$ at $u$.
 
 ## Main definitions
-* `Online.OCO.LEA.FTRL.F_obj`
-* `Online.OCO.LEA.FTRL.boundary`
-* `Online.OCO.LEA.FTRL.shift`
-* `Online.OCO.LEA.FTRL.stability`
-* `Online.OCO.LEA.FTRL.linearization`
-* `Online.OCO.LEA.FTRL.optimality`
-* `Online.OCO.LEA.FTRL.terminalOptimality`
+* `F_obj`
+* `boundary`
+* `linearization`
+* `optimality`
+* `terminalOptimality`
 
 ## Main results
-* `Online.OCO.LEA.FTRL.regret_decomposition_eq`: The algebraic multi-round regret equality for FTRL.
+* `regret_decomposition_eq`: The algebraic multi-round regret equality for FTRL.
 -/
 
 open scoped BigOperators Bregman
@@ -75,14 +76,6 @@ def F_obj (t : ℕ) (y : E) : ℝ :=
 def boundary (T : ℕ) : ℝ :=
   ψ (T + 1) u - ψ 1 (w 1)
 
-/-- Potential shift accounting for regularizer changes: $-(\psi_{t+1} - \psi_t)(w_{t+1})$. -/
-def shift (t : ℕ) : ℝ :=
-  - (ψ (t + 1) - ψ t) (w (t + 1))
-
-/-- Stability tradeoff between loss reduction and regularizer distance. -/
-def stability (t : ℕ) : ℝ :=
-  (g t) (w t - w (t + 1)) - D_[ψ t](w (t + 1), w t, gψ t (w t))
-
 /-- Error incurred by linearizing the loss with subgradient `g_t` at $w_t$. -/
 def linearization (t : ℕ) : ℝ :=
   - D_[l t](u, w t, g t)
@@ -99,8 +92,8 @@ def terminalOptimality (T : ℕ) : ℝ :=
 theorem regret_decomposition_eq (T : ℕ) :
     (∑ t ∈ Ico 1 (T + 1), (l t (w t) - l t u)) =
     boundary ψ u w T
-    + (∑ t ∈ Ico 1 (T + 1), shift ψ w t)
-    + (∑ t ∈ Ico 1 (T + 1), stability ψ gψ w g t)
+    + (∑ t ∈ Ico 1 (T + 1), LEA.shift ψ w t)
+    + (∑ t ∈ Ico 1 (T + 1), LEA.stability ψ gψ w g t)
     + (∑ t ∈ Ico 1 (T + 1), linearization u w g l t)
     - (∑ t ∈ Ico 1 (T + 1), optimality gψ w g t)
     + terminalOptimality ψ u w g T := by
@@ -109,7 +102,7 @@ theorem regret_decomposition_eq (T : ℕ) :
     simp [boundary, terminalOptimality, F_obj]
   | succ T ih =>
     simp_rw [sum_Ico_succ_top (by omega : 1 ≤ T + 1), ih]
-    dsimp [boundary, terminalOptimality, shift, stability, linearization, optimality,
+    dsimp [boundary, terminalOptimality, LEA.shift, LEA.stability, linearization, optimality,
       bregDiv, F_obj]
     simp only [map_sub, add_apply, _root_.sum_apply]
     simp_rw [sum_sub_distrib, sum_Ico_succ_top (by omega : 1 ≤ T + 1)]

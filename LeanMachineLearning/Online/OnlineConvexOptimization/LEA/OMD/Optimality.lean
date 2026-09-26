@@ -27,7 +27,7 @@ non-negativity directly establishes that the optimality term can be discarded or
 by $0$.
 
 ## Main results
-* `Online.OCO.LEA.OMD.optimality_nonneg_of_isMinOn`: $0 \le \mathrm{optimality}_t$
+* `optimality_nonneg_of_isMinOn`: $0 \le \mathrm{optimality}_t$
   whenever $w_{t+1}$ is a constrained minimizer on $s$ and $u \in s$.
 -/
 
@@ -60,24 +60,20 @@ lemma optimality_nonneg_of_isMinOn (t : ℕ)
     (h_min : IsMinOn (fun x ↦ (g t) x + ψ (t + 1) x - (gψ t (w t)) x) s (w (t + 1))) :
     0 ≤ optimality gψ u w g t := by
   let lin : E →L[ℝ] ℝ := g t - gψ t (w t)
+  have h_conv : ConvexOn ℝ s (ψ (t + 1) + ⇑lin) :=
+    hψ_conv.add (lin.toLinearMap.convexOn hψ_conv.1)
   have h_min' : IsMinOn ((ψ (t + 1) + ⇑lin) + fun _ : E ↦ (0 : ℝ)) s (w (t + 1)) := by
     intro x hx
     have := h_min hx
     dsimp [lin] at this ⊢
     simp only [add_zero, sub_apply] at this ⊢
     linarith
-  have h_conv : ConvexOn ℝ s (ψ (t + 1) + ⇑lin) :=
-    hψ_conv.add (lin.toLinearMap.convexOn hψ_conv.1)
   have h_subg := ((hψ_diff.add lin.hasFDerivAt).hasSubgradientWithinAt_add_iff
     (g := 0) h_conv (convexOn_const 0 h_conv.1) hw).mp
     (hasSubgradientWithinAt_zero_iff_isMinOn.mpr h_min') u hu
   dsimp [bregDiv, optimality, lin] at h_subg ⊢
-  simp only [sub_self, zero_sub, neg_apply, neg_neg] at h_subg
-  have h_eq : (gψ (t + 1) (w (t + 1)) + (g t - gψ t (w t))) (u - w (t + 1)) =
-      (g t + gψ (t + 1) (w (t + 1)) - gψ t (w t)) (u - w (t + 1)) := by
-    simp only [add_apply, sub_apply]
-    ring
-  rwa [h_eq] at h_subg
+  simp only [sub_self, zero_sub, neg_apply, neg_neg, add_apply, sub_apply] at h_subg ⊢
+  linarith
 
 end Optimality
 

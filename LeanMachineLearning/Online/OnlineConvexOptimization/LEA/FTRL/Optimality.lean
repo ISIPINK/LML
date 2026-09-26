@@ -29,8 +29,8 @@ $$\mathrm{terminalOptimality}_T \le 0,$$
 these bounds establish that both terms can be upper-bounded by $0$ in the regret bound.
 
 ## Main results
-* `Online.OCO.LEA.FTRL.optimality_nonneg_of_isMinOn`: $0 \le \mathrm{optimality}_t$.
-* `Online.OCO.LEA.FTRL.terminalOptimality_nonpos_of_isMinOn`: $\mathrm{terminalOptimality}_T \le 0$.
+* `optimality_nonneg_of_isMinOn`: $0 \le \mathrm{optimality}_t$.
+* `terminalOptimality_nonpos_of_isMinOn`: $\mathrm{terminalOptimality}_T \le 0$.
 -/
 
 open scoped BigOperators Bregman Topology
@@ -59,23 +59,19 @@ lemma optimality_nonneg_of_isMinOn (t : ℕ)
     (hψ_conv : ConvexOn ℝ s (ψ t))
     (hwt : w t ∈ s)
     (hwt1 : w (t + 1) ∈ s)
-    (h_min : IsMinOn (fun x ↦ ψ t x + (∑ i ∈ Ico 1 t, g i) x) s (w t)) :
+    (h_min : IsMinOn (F_obj ψ g t) s (w t)) :
     0 ≤ optimality gψ w g t := by
   let lin : E →L[ℝ] ℝ := ∑ i ∈ Ico 1 t, g i
-  have h_min' : IsMinOn ((ψ t + ⇑lin) + fun _ : E ↦ (0 : ℝ)) s (w t) := by
-    intro x hx
-    have := h_min hx
-    dsimp [lin] at this ⊢
-    simp only [add_zero] at this ⊢
-    linarith
   have h_conv : ConvexOn ℝ s (ψ t + ⇑lin) :=
     hψ_conv.add (lin.toLinearMap.convexOn hψ_conv.1)
+  have h_min' : IsMinOn ((ψ t + ⇑lin) + fun _ : E ↦ (0 : ℝ)) s (w t) := by
+    intro x hx
+    simpa [F_obj, lin, add_zero] using h_min hx
   have h_subg := ((hψ_diff.add lin.hasFDerivAt).hasSubgradientWithinAt_add_iff
     (g := 0) h_conv (convexOn_const 0 h_conv.1) hwt).mp
     (hasSubgradientWithinAt_zero_iff_isMinOn.mpr h_min') (w (t + 1)) hwt1
   dsimp [bregDiv, optimality, lin] at h_subg ⊢
-  simp only [sub_self, zero_sub, neg_apply, neg_neg] at h_subg
-  exact h_subg
+  simpa using h_subg
 
 /-- Terminal optimality deficit is non-positive when $w_{T+1}$ minimizes
 the terminal cumulative objective $F_{T+1}$ over $s$ and $u \in s$. -/

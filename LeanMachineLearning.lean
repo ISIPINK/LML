@@ -54,12 +54,12 @@ public import LeanMachineLearning.Online.Bandit.SumRewards
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.COMD.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.COMD2.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.FTRL.RegretDecomposition
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Domain
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Regularizer
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Boundary
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Shift
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Stability
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Optimality
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Formula
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.RegretBound
