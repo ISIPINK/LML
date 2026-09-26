@@ -23,17 +23,17 @@ tailored to the Learning with Expert Advice (LEA) setting:
 Under these conditions, the regret is governed by the boundary divergence & potential drift,
 and four per-round regret terms:
 1. `boundary`: Initial divergence minus final divergence plus regularizer drift at $u$.
-2. `shift`: Cross-round regularizer potential drift on iterates $w_t$.
-3. `stability`: Movement of the loss balanced against regularizer divergence.
+2. `stability`: Movement of the loss balanced against regularizer divergence.
+3. `shift`: Cross-round regularizer potential drift on iterates $w_t$.
 4. `optimality`: First-order optimality deficit of the update step.
 5. `linearization`: Loss linearization error via subgradients.
 
 ## Main definitions
 * `Online.OCO.LEA.OMD.boundary`
 * `Online.OCO.LEA.OMD.linearization`
-* `Online.OCO.LEA.OMD.shift`
-* `Online.OCO.LEA.OMD.optimality`
 * `Online.OCO.LEA.OMD.stability`
+* `Online.OCO.LEA.OMD.optimality`
+* `Online.OCO.LEA.OMD.shift`
 
 ## Main results
 * `Online.OCO.LEA.OMD.regret_decomposition_eq`: The algebraic multi-round regret equality.
@@ -67,26 +67,27 @@ def boundary (T : ℕ) : ℝ :=
 def linearization (t : ℕ) : ℝ :=
   - D_[l t](u, w t, g t)
 
-/-- Potential shift accounting for changes in regularizers across rounds. -/
-def shift (t : ℕ) : ℝ :=
-  - (ψ (t + 1) - ψ t) (w (t + 1))
-
-/-- First-order optimality deficit of the update $w_{t+1}$. -/
-def optimality (t : ℕ) : ℝ :=
-  (g t + gψ (t + 1) (w (t + 1)) - gψ t (w t)) (u - w (t + 1))
-
 /-- Stability tradeoff between loss reduction and regularizer distance. -/
 def stability (t : ℕ) : ℝ :=
   (g t) (w t - w (t + 1)) - D_[ψ t](w (t + 1), w t, gψ t (w t))
+
+/-- Encodes the update implicitly via first-order optimality conditions:
+$\text{optimality}(t) \le 0$ when $w_{t+1}$ satisfies first-order optimality. -/
+def optimality (t : ℕ) : ℝ :=
+  (g t + gψ (t + 1) (w (t + 1)) - gψ t (w t)) (u - w (t + 1))
+
+/-- Potential shift accounting for changes in regularizers across rounds. -/
+def shift (t : ℕ) : ℝ :=
+  - (ψ (t + 1) - ψ t) (w (t + 1))
 
 /-- Exact multi-round algebraic regret decomposition for static, uncentered, unadjusted OMD. -/
 theorem regret_decomposition_eq (T : ℕ) :
     (∑ t ∈ Ico 1 (T + 1), (l t (w t) - l t u)) =
     boundary ψ gψ u w T
-    + (∑ t ∈ Ico 1 (T + 1), shift ψ w t)
     + (∑ t ∈ Ico 1 (T + 1), stability ψ gψ w g t)
-    + (∑ t ∈ Ico 1 (T + 1), linearization u w g l t)
-    - (∑ t ∈ Ico 1 (T + 1), optimality gψ u w g t) := by
+    + (∑ t ∈ Ico 1 (T + 1), shift ψ w t)
+    - (∑ t ∈ Ico 1 (T + 1), optimality gψ u w g t)
+    + (∑ t ∈ Ico 1 (T + 1), linearization u w g l t) := by
   induction T with
   | zero =>
     simp [boundary]

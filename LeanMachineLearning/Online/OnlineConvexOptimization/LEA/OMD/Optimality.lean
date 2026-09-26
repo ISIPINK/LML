@@ -21,7 +21,7 @@ $$x \mapsto \eta g_t(x) + \psi_{t+1}(x) - \nabla \psi_t(w_t)(x)$$
 over a convex domain $s \subseteq E$, $\psi_{t+1}$ is convex and differentiable at $w_{t+1}$,
 and the comparator $u \in s$.
 
-Because this term appears with a minus sign in `regretDecomposition`:
+Because this term appears with a minus sign in `regret_decomposition_eq`:
 $$- \sum_t \mathrm{optimality}_t \le 0,$$
 non-negativity directly establishes that the optimality term can be discarded or upper-bounded
 by $0$.

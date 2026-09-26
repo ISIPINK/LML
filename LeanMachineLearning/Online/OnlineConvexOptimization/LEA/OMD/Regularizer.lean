@@ -204,4 +204,3 @@ lemma bregDiv_unnormEntropyShifted (α : ℝ) (x y : EuclideanSpace ℝ (Fin d))
   ring
 
 end Online.OCO.LEA.OMD
-
