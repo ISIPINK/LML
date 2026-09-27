@@ -44,16 +44,17 @@ losses $g_t \ge 0$, where the stability term is bounded directly with $w_t$:
 $$\sum_{t=1}^T (l_t(w_t) - l_t(u)) \le \alpha_1 \ln d + (\psi_{\alpha(T+1)}(u) - \psi_{\alpha 1}(u))
   + \sum_{t=1}^T \frac{1}{2\alpha_t} \sum_{i=1}^d w_{t, i} (g_t)_i^2.$$ -/
 theorem regret_bound (α : ℕ → ℝ) (T : ℕ)
-    (hα_pos : ∀ t ∈ Ico 1 (T + 2), 0 < α t) (hd : 0 < d)
-    (u : EuclideanSpace ℝ (Fin d)) (hu : u ∈ stdSimplex)
-    (l : ℕ → EuclideanSpace ℝ (Fin d) → ℝ)
+    (hα_pos : ∀ t ∈ Ico 1 (T + 2), 0 < α t)
+    (h_mono : ∀ t ∈ Ico 1 (T + 1), α t ≤ α (t + 1))
+    (hd : 0 < d)
     (g : ℕ → (EuclideanSpace ℝ (Fin d) →L[ℝ] ℝ))
     (w : ℕ → EuclideanSpace ℝ (Fin d))
     (hw_def : w = omdExpWeights hd α g)
+    (u : EuclideanSpace ℝ (Fin d)) (hu : u ∈ stdSimplex)
+    (l : ℕ → EuclideanSpace ℝ (Fin d) → ℝ)
     (hg : ∀ t ∈ Ico 1 (T + 1), HasSubgradientWithinAt (l t) (g t) stdSimplex (w t))
     (hg_nonneg : ∀ t ∈ Ico 1 (T + 1),
-      ∀ i, 0 ≤ g t (EuclideanSpace.basisFun (Fin d) ℝ i))
-    (h_mono : ∀ t ∈ Ico 1 (T + 1), α t ≤ α (t + 1)) :
+      ∀ i, 0 ≤ g t (EuclideanSpace.basisFun (Fin d) ℝ i)) :
     ∑ t ∈ Ico 1 (T + 1), (l t (w t) - l t u) ≤
       α 1 * Real.log d + (unnormEntropyShifted (α (T + 1)) u - unnormEntropyShifted (α 1) u)
       + ∑ t ∈ Ico 1 (T + 1), (1 / (2 * α t)) *
