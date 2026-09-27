@@ -5,21 +5,23 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.RegretDecomposition
+public import Mathlib.Analysis.Normed.Module.Basic
+public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.RegretDecomposition
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 
 /-!
-# First-Order Optimality Bounds for Online Mirror Descent (LEA Specialization)
+# Optimality Bounds for Euclidean OMD / Projected OGD
 
 This file proves that the first-order optimality deficit:
-$$\mathrm{optimality}_t = (\eta g_t + \nabla \psi_{t+1}(w_{t+1}) -
-  \nabla \psi_t(w_t))(u - w_{t+1})$$
-is **non-negative** (i.e. $0 \le \mathrm{optimality}_t$) whenever $w_{t+1}$ minimizes the
+$$\mathrm{optimality}_t = (g_t + \nabla\psi_{t+1}(w_{t+1}) - \nabla\psi_t(w_t))(u - w_{t+1})$$
+is **non-negative** ($0 \le \mathrm{optimality}_t$) whenever $w_{t+1}$ minimizes the
 linearized mirror descent step:
-$$x \mapsto \eta g_t(x) + \psi_{t+1}(x) - \nabla \psi_t(w_t)(x)$$
-over a convex domain $s \subseteq E$, $\psi_{t+1}$ is convex and differentiable at $w_{t+1}$,
-and the comparator $u \in s$.
+$$x \mapsto (g_t)(x) + \psi_{t+1}(x) - (\nabla\psi_t(w_t))(x)$$
+over an arbitrary convex set $s \subseteq E$, $\psi_{t+1}$ is convex and differentiable at
+$w_{t+1}$, and comparator $u \in s$.
 
 Because this term appears with a minus sign in `regret_decomposition_eq`:
 $$- \sum_t \mathrm{optimality}_t \le 0,$$
@@ -27,16 +29,15 @@ non-negativity directly establishes that the optimality term can be discarded or
 by $0$.
 
 ## Main results
-* `optimality_nonneg_of_isMinOn`: $0 \le \mathrm{optimality}_t$
-  whenever $w_{t+1}$ is a constrained minimizer on $s$ and $u \in s$.
+* `optimality_nonneg_of_isMinOn`: $0 \le \mathrm{optimality}_t$.
 -/
 
-open scoped Bregman Topology
+open scoped BigOperators Bregman Topology
 open Filter
 
 @[expose] public section
 
-namespace Online.OCO.LEA.OMD
+namespace Online.OCO.OGD.COMD2
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -44,19 +45,19 @@ section Optimality
 
 variable {ψ : ℕ → E → ℝ}
 variable {gψ : ℕ → E → (E →L[ℝ] ℝ)}
-variable {u : E}
+variable {u : ℕ → E}
 variable {w : ℕ → E}
 variable {g : ℕ → (E →L[ℝ] ℝ)}
 variable {s : Set E}
 
 /-- First-order optimality deficit is non-negative when $w_{t+1}$ minimizes the mirror
 descent step objective over $s$, $\psi_{t+1}$ is convex with Fréchet derivative
-$g\psi_{t+1}(w_{t+1})$, and $u \in s$. -/
+$g\psi_{t+1}(w_{t+1})$, and $u_t \in s$. -/
 lemma optimality_nonneg_of_isMinOn (t : ℕ)
     (hψ_diff : HasFDerivAt (ψ (t + 1)) (gψ (t + 1) (w (t + 1))) (w (t + 1)))
     (hψ_conv : ConvexOn ℝ s (ψ (t + 1)))
     (hw : w (t + 1) ∈ s)
-    (hu : u ∈ s)
+    (hu : u t ∈ s)
     (h_min : IsMinOn (fun x ↦ (g t) x + ψ (t + 1) x - (gψ t (w t)) x) s (w (t + 1))) :
     0 ≤ optimality gψ u w g t := by
   let lin : E →L[ℝ] ℝ := g t - gψ t (w t)
@@ -70,11 +71,11 @@ lemma optimality_nonneg_of_isMinOn (t : ℕ)
     linarith
   have h_subg := ((hψ_diff.add lin.hasFDerivAt).hasSubgradientWithinAt_add_iff
     (g := 0) h_conv (convexOn_const 0 h_conv.1) hw).mp
-    (hasSubgradientWithinAt_zero_iff_isMinOn.mpr h_min') u hu
+    (hasSubgradientWithinAt_zero_iff_isMinOn.mpr h_min') (u t) hu
   dsimp [bregDiv, optimality, lin] at h_subg ⊢
   simp only [sub_self, zero_sub, neg_apply, neg_neg, add_apply, sub_apply] at h_subg ⊢
   linarith
 
 end Optimality
 
-end Online.OCO.LEA.OMD
+end Online.OCO.OGD.COMD2

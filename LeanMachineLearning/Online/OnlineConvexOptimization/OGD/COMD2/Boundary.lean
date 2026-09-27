@@ -7,7 +7,7 @@ module
 
 public import Mathlib.Analysis.InnerProductSpace.Basic
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OMD.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.RegretDecomposition
 
 /-!
 # Boundary Term Bound for Euclidean OMD / Projected OGD
@@ -28,7 +28,7 @@ open scoped RealInnerProductSpace BigOperators
 
 @[expose] public section
 
-namespace Online.OCO.OGD.OMD
+namespace Online.OCO.OGD.COMD2
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 
@@ -48,5 +48,5 @@ theorem boundary_eucSq_le (α : ℕ → ℝ) (T : ℕ) (hα : 0 ≤ α (T + 1)) 
     nlinarith [norm_nonneg (u T), hu_norm T le_rfl]
   nlinarith
 
-end Online.OCO.OGD.OMD
+end Online.OCO.OGD.COMD2
 

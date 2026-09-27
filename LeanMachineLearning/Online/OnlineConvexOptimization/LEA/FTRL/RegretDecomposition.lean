@@ -48,9 +48,6 @@ Under these conditions, the regret is governed by the boundary drift and per-rou
 open scoped BigOperators Bregman
 open Finset
 
-set_option linter.unusedSectionVars false
-set_option linter.style.longLine false
-
 @[expose] public section
 
 namespace Online.OCO.LEA.FTRL

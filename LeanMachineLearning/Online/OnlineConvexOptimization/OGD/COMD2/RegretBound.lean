@@ -11,10 +11,10 @@ public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Shift
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Stability
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OMD.RegretDecomposition
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OMD.Boundary
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OMD.Optimality
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OMD.Pathlength
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.Boundary
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.Optimality
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.Pathlength
 
 /-!
 # Regret Bound for Online Mirror Descent (OMD / Projected OGD)
@@ -34,7 +34,7 @@ open Finset
 
 @[expose] public section
 
-namespace Online.OCO.OGD.OMD
+namespace Online.OCO.OGD.COMD2
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 
@@ -81,4 +81,4 @@ theorem regret_bound (T : ℕ)
   linarith [regret_decomposition_eq (fun k ↦ eucSq (E := E) (α k))
     (fun k ↦ eucSqFDeriv (α k)) u w g l T]
 
-end Online.OCO.OGD.OMD
+end Online.OCO.OGD.COMD2

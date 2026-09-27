@@ -10,12 +10,12 @@ public import Mathlib.Algebra.BigOperators.Intervals
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.RegretDecomposition
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Boundary
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Boundary
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Optimality
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Formula
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Optimality
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Formula
 
 /-!
 # Regret Bound for Online Mirror Descent in Learning with Expert Advice (LEA)
@@ -35,7 +35,7 @@ open Finset
 
 @[expose] public section
 
-namespace Online.OCO.LEA.OMD
+namespace Online.OCO.LEA.COMD2
 
 variable {d : ℕ}
 
@@ -82,4 +82,4 @@ theorem regret_bound (α : ℕ → ℝ) (T : ℕ)
   have h_shift_le := sum_shift_unnormEntropyShifted_nonpos hd α (omdExpWeights hd α g) T h_mono hw
   linarith
 
-end Online.OCO.LEA.OMD
+end Online.OCO.LEA.COMD2

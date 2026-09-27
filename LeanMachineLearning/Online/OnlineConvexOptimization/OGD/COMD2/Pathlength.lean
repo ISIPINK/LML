@@ -9,7 +9,7 @@ public import Mathlib.Analysis.InnerProductSpace.Basic
 public import Mathlib.Algebra.BigOperators.Intervals
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OMD.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.RegretDecomposition
 
 /-!
 # Pathlength Term Bound for OMD Dynamic Regret
@@ -34,7 +34,7 @@ set_option linter.style.longLine false
 
 @[expose] public section
 
-namespace Online.OCO.OGD.OMD
+namespace Online.OCO.OGD.COMD2
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 
@@ -64,5 +64,5 @@ theorem sum_pathlength_eucSq_le (α : ℕ → ℝ) (T : ℕ)
     linarith
   exact h1.trans h2
 
-end Online.OCO.OGD.OMD
+end Online.OCO.OGD.COMD2
 

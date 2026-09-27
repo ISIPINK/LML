@@ -44,7 +44,7 @@ open Finset
 
 @[expose] public section
 
-namespace Online.OCO.LEA.OMD
+namespace Online.OCO.LEA.COMD2
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -91,4 +91,4 @@ theorem regret_decomposition_eq (T : ℕ) :
 
 end Terms
 
-end Online.OCO.LEA.OMD
+end Online.OCO.LEA.COMD2

@@ -12,7 +12,7 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.Optimality
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Optimality
 
 /-!
 # Exponential Weights Update Formula for Learning with Expert Advice (LEA)
@@ -44,7 +44,7 @@ open Finset
 
 @[expose] public section
 
-namespace Online.OCO.LEA.OMD
+namespace Online.OCO.LEA.COMD2
 
 variable {d : ℕ}
 
@@ -288,4 +288,4 @@ theorem omdExpWeights_optimality_nonneg (hd : 0 < d) (α : ℕ → ℝ)
     (gψ := fun s ↦ unnormEntropyFDeriv (α s))
     t h_diff h_conv hw_succ hu h_min
 
-end Online.OCO.LEA.OMD
+end Online.OCO.LEA.COMD2

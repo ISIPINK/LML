@@ -47,7 +47,7 @@ open Finset
 
 @[expose] public section
 
-namespace Online.OCO.OGD.OMD
+namespace Online.OCO.OGD.COMD2
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -100,4 +100,4 @@ theorem regret_decomposition_eq (T : ℕ) :
 
 end Terms
 
-end Online.OCO.OGD.OMD
+end Online.OCO.OGD.COMD2

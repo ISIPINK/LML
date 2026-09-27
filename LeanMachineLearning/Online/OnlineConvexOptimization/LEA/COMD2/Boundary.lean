@@ -11,7 +11,7 @@ public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.OMD.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.RegretDecomposition
 
 /-!
 # Boundary Term Bound for Learning with Expert Advice (LEA)
@@ -38,7 +38,7 @@ open Finset
 
 @[expose] public section
 
-namespace Online.OCO.LEA.OMD
+namespace Online.OCO.LEA.COMD2
 
 variable {d : ℕ}
 
@@ -65,4 +65,4 @@ theorem boundary_shifted_le_log_card (α : ℕ → ℝ) (hα1 : 0 ≤ α 1) (T :
   have h_init := bregDiv_unnormEntropy_uniformSimplex_le (α 1) hα1 hd u hu
   linarith
 
-end Online.OCO.LEA.OMD
+end Online.OCO.LEA.COMD2
