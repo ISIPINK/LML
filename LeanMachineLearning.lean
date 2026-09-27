@@ -54,6 +54,8 @@ public import LeanMachineLearning.Online.Bandit.SumRewards
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.COMD.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.COMD2.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.FTRL.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.FPRL.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.OptFPRL.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
@@ -80,6 +82,9 @@ public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Regre
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Boundary
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Optimality
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.RegretBound
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OptFPRL.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OptFPRL.Stability
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.OptFPRL.Pathlength
 public import LeanMachineLearning.SequentialLearning.ActionIndicator
 public import LeanMachineLearning.SequentialLearning.Algorithm
 public import LeanMachineLearning.SequentialLearning.AlgorithmDensity
