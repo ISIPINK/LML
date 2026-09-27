@@ -6,9 +6,6 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Data.Finset.Interval
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
@@ -17,23 +14,6 @@ public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 This file establishes the exact multi-round algebraic regret decomposition for Centered
 Online Mirror Descent (COMD) following Lemma A.1.1 (Strong Centered Mirror Descent Lemma)
 from Andrew Jacobsen's thesis, *Adapting to Non-Stationarity in Online Learning*.
-
-The regret decomposition holds for any sequence of comparators `u_t` and any sequence
-of centering potentials `φ_t`.
-
-## Regret Decomposition Components
-Over rounds $t \in [1, T]$ (`Finset.Ico 1 (T + 1)`):
-- Boundary divergence: $D_{\psi_{T+1}}(u_T, \tilde{w}_1) - D_{\psi_{T+1}}(u_T, \tilde{w}_{T+1})$
-- Adjustment drift: $\sum_{t=1}^T \text{adjustment}_t$
-- Centered pathlength:
-  $\sum_{t=1}^T \text{pathlength}_t =
-    \sum_{t=1}^T \langle \nabla \psi_t(\tilde{w}_t) - \nabla \psi_t(\tilde{w}_1),
-      u_{t-1} - u_t \rangle$
-- Stability term: $\sum_{t=1}^T \text{stability}_t$
-- Regularizer shift on iterate: $-\sum_{t=1}^T D_{\psi_{t+1} - \psi_t}(w_{t+1}, \tilde{w}_1)$
-- Optimality deficit: $-\sum_{t=1}^T \text{optimality}_t$
-- Centering surplus: $\sum_{t=1}^T \text{centering}_t$
-- Linearization error: $\eta \sum_{t=1}^T (- D_{l_t}(u_t, w_{t+1}, g_t))$
 
 ## Main definitions
 * `boundary`
@@ -70,48 +50,57 @@ variable (u w w_tilde : ℕ → E)
 variable (g : ℕ → (E →L[ℝ] ℝ))
 variable (l : ℕ → E → ℝ)
 
-/-- Boundary term comprising initial and final Bregman divergences anchored at $\tilde{w}_1$. -/
+/-- Boundary term comprising initial and final Bregman divergences anchored at $\tilde{w}_1$:
+$$D_{\psi_{T+1}}(u_T,\tilde w_1,g\psi_{T+1}(\tilde w_1))
+  - D_{\psi_{T+1}}(u_T,\tilde w_{T+1},g\psi_{T+1}(\tilde w_{T+1})).$$ -/
 def boundary (T : ℕ) : ℝ :=
   D_[ψ (T + 1)](u T, w_tilde 1, gψ (T + 1) (w_tilde 1))
   - D_[ψ (T + 1)](u T, w_tilde (T + 1), gψ (T + 1) (w_tilde (T + 1)))
 
-/-- Error incurred by replacing the true convex loss with its linear approximation
-at the update iterate using the subgradient `g_t`. Non-positive when `l_t` is convex. -/
+/-- Linearization slack from replacing $l_t$ with $g_t$: $-D_{l_t}(u_t, w_{t+1}, g_t)$. -/
 def linearization (t : ℕ) : ℝ :=
   - D_[l t](u t, w (t + 1), g t)
 
-/-- Linear coupling penalty measuring the variation in the comparator sequence `u_t`,
-anchored at initial state $\tilde{w}_1$.
-Vanishes identically for a static comparator (`u_t = u`). -/
+/-- Regret budget for varying comparator:
+$$(g\psi_t(\tilde w_t) - g\psi_t(\tilde w_1))(u_{t-1} - u_t).$$ -/
 def pathlength (t : ℕ) : ℝ :=
   (gψ t (w_tilde t) - gψ t (w_tilde 1)) (u (t - 1) - u t)
 
 /-- One-round stability penalty balancing the movement of the loss `l_t` between
-the anchor `w̃_t` and iterate `w_{t+1}` against the divergence regularizer step. -/
+the anchor `w̃_t` and iterate `w_{t+1}` against the divergence regularizer step:
+$$\eta\,(l_t(\tilde w_t) - l_t(w_{t+1}))
+  - D_{\psi_t}(w_{t+1}, \tilde w_t, g\psi_t(\tilde w_t)).$$ -/
 def stability (t : ℕ) : ℝ :=
   η * (l t (w_tilde t) - l t (w (t + 1))) - D_[ψ t](w (t + 1), w_tilde t, gψ t (w_tilde t))
 
 /-- Encodes the update implicitly via first-order optimality conditions:
+$$(\eta\,g_t + g\varphi_t(w_{t+1}) + g\psi_{t+1}(w_{t+1}) - g\psi_t(\tilde w_t)
+  - g\psi_{t+1}(\tilde w_1) + g\psi_t(\tilde w_1))(u_t - w_{t+1}).$$
 $\text{optimality}(t) \le 0$ when $w_{t+1}$ satisfies first-order optimality
 anchored at $\tilde{w}_1$. -/
 def optimality (t : ℕ) : ℝ :=
   ((η : ℝ) • g t + gφ t (w (t + 1)) + gψ (t + 1) (w (t + 1)) - gψ t (w_tilde t)
     - gψ (t + 1) (w_tilde 1) + gψ t (w_tilde 1)) (u t - w (t + 1))
 
-/-- Surplus contribution induced by the centering potential `φ_t`.
+/-- Surplus contribution induced by the centering potential `φ_t`:
+$$\varphi_t(u_t) - \varphi_t(w_{t+1}) - D_{\varphi_t}(u_t, w_{t+1}, g\varphi_t(w_{t+1})).$$
 Zero when no centering is used (`φ_t = 0`). -/
 def centering (t : ℕ) : ℝ :=
   φ t (u t) - φ t (w (t + 1)) - D_[φ t](u t, w (t + 1), gφ t (w (t + 1)))
 
 /-- Divergence drift capturing arbitrary post-processing or state adjustments
-from iterate `w_{t+1}` to anchor `w̃_{t+1}`. Vanishes for unadjusted or projection-free
+from iterate `w_{t+1}` to anchor `w̃_{t+1}`:
+$$D_{\psi_{t+1}}(u_t,\tilde w_{t+1},g\psi_{t+1}(\tilde w_{t+1}))
+  - D_{\psi_{t+1}}(u_t,w_{t+1},g\psi_{t+1}(w_{t+1})).$$
+Vanishes for unadjusted or projection-free
 updates (`w̃_{t+1} = w_{t+1}`), and yields small controllable penalties for schemes
 like Fixed Share. -/
 def adjustment (t : ℕ) : ℝ :=
   D_[ψ (t+1)](u t, w_tilde (t + 1), gψ (t+1) (w_tilde (t + 1)))
   - D_[ψ (t+1)](u t, w (t + 1), gψ (t+1) (w (t + 1)))
 
-/-- Regularizer shift evaluated on iterate $w_{t+1}$ anchored at initial state $\tilde{w}_1$. -/
+/-- Regularizer shift evaluated on iterate $w_{t+1}$ anchored at initial state $\tilde{w}_1$:
+$$D_{\psi_{t+1} - \psi_t}(w_{t+1}, \tilde w_1, g\psi_{t+1}(\tilde w_1) - g\psi_t(\tilde w_1)).$$ -/
 def shift (t : ℕ) : ℝ :=
   D_[ψ (t + 1) - ψ t](w (t + 1), w_tilde 1, gψ (t + 1) (w_tilde 1) - gψ t (w_tilde 1))
 

@@ -5,11 +5,6 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Algebra.BigOperators.Intervals
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
-public import Mathlib.Analysis.Normed.Module.Basic
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
 
 /-!

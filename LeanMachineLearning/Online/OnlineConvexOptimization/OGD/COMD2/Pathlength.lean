@@ -5,10 +5,6 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Basic
-public import Mathlib.Algebra.BigOperators.Intervals
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.RegretDecomposition
 
 /-!

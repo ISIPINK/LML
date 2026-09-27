@@ -5,16 +5,24 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Data.Finset.Interval
+public import Mathlib.Algebra.BigOperators.Group.Finset.Defs
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Order.Interval.Finset.Nat
+import Mathlib.Algebra.BigOperators.Intervals
+import Mathlib.Topology.Algebra.InfiniteSum.Order
 
 /-!
 # Master Regret Decomposition for Follow-the-Regularized-Leader (FTRL)
 
 This file establishes the exact multi-round algebraic regret decomposition for
 Follow-the-Regularized-Leader (FTRL), corresponding to Lemma 7.1 in Francesco Orabona's
-*A Modern Introduction to Online Learning* (v10).
+*A Modern Introduction to Online Learning* (v10). Writing
+$F_t(x) = \psi_t(x) + \sum_{i=1}^{t-1} \ell_i(x)$ and
+$x_t \in \arg\min_{x \in V} F_t(x)$, the regret satisfies, for all $u$,
+$$\sum_{t=1}^T (\ell_t(x_t) - \ell_t(u))
+  = \psi_{T+1}(u) - \min_{x \in V} \psi_1(x)
+  + \sum_{t=1}^T (F_t(x_t) - F_{t+1}(x_{t+1}) + \ell_t(x_t))
+  + F_{T+1}(x_{T+1}) - F_{T+1}(u).$$
 
 ## Main definitions
 * `F_obj`
@@ -43,24 +51,29 @@ variable (w : ℕ → E)
 variable (l : ℕ → E → ℝ)
 
 /--
-The cumulative objective function $F_t(y) = \psi_t(y) + \sum_{i=1}^{t-1} l_i(y)$.
+Cumulative objective (Orabona's $F_t$): $F_t(x) = \psi_t(x) + \sum_{i=1}^{t-1} \ell_i(x)$.
 -/
 def F_obj (t : ℕ) (y : E) : ℝ :=
   ψ t y + ∑ i ∈ Ico 1 t, l i y
 
-/-- Boundary regularizer term: $\psi_{T+1}(u) - F_1(w_1)$. -/
+/-- Boundary term: $\psi_{T+1}(u) - \min_{x \in V} \psi_1(x) = \psi_{T+1}(u) - F_1(x_1)$. -/
 def boundary (T : ℕ) : ℝ :=
   ψ (T + 1) u - F_obj ψ l 1 (w 1)
 
-/-- One-round stability penalty measuring the advance of $F_t + l_t$ between $w_t$ and $w_{t+1}$. -/
+/-- One-round stability penalty $F_t(x_t) - F_{t+1}(x_{t+1}) + \ell_t(x_t)$,
+measuring the advance of $F_t + \ell_t$ between $x_t$ and $x_{t+1}$. -/
 def stability (t : ℕ) : ℝ :=
   F_obj ψ l t (w t) - F_obj ψ l (t + 1) (w (t + 1)) + l t (w t)
 
-/-- Terminal optimality deficit of $w_{T+1}$ relative to comparator $u$. -/
+/-- Terminal optimality deficit $F_{T+1}(x_{T+1}) - F_{T+1}(u)$ of $x_{T+1}$ relative to $u$. -/
 def terminalOptimality (T : ℕ) : ℝ :=
   F_obj ψ l (T + 1) (w (T + 1)) - F_obj ψ l (T + 1) u
 
-/-- Master Algebraic Regret Decomposition Identity for FTRL (Orabona, Lemma 7.1). -/
+/-- Master Algebraic Regret Decomposition Identity for FTRL (Orabona, Lemma 7.1):
+$$\sum_{t=1}^T (\ell_t(x_t) - \ell_t(u))
+  = \psi_{T+1}(u) - \min_{x \in V} \psi_1(x)
+  + \sum_{t=1}^T (F_t(x_t) - F_{t+1}(x_{t+1}) + \ell_t(x_t))
+  + F_{T+1}(x_{T+1}) - F_{T+1}(u).$$ -/
 theorem regret_decomposition_eq (T : ℕ) :
     (∑ t ∈ Ico 1 (T + 1), (l t (w t) - l t u)) =
     boundary ψ u w l T

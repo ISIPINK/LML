@@ -5,12 +5,9 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.COMD2.RegretDecomposition
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
+import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
+import Mathlib.Analysis.Calculus.FDeriv.Add
 
 /-!
 # Optimality Bounds for Euclidean OMD / Projected OGD
@@ -33,7 +30,7 @@ by $0$.
 -/
 
 open scoped BigOperators Bregman Topology
-open Filter
+open Filter Finset
 
 @[expose] public section
 
@@ -75,6 +72,21 @@ lemma optimality_nonneg_of_isMinOn (t : ℕ)
   dsimp [bregDiv, optimality, lin] at h_subg ⊢
   simp only [sub_self, zero_sub, neg_apply, neg_neg, add_apply, sub_apply] at h_subg ⊢
   linarith
+
+/-- Cumulative first-order optimality deficit is non-negative when each $w_{t+1}$ minimizes
+the mirror descent step objective over $s$. -/
+lemma sum_optimality_nonneg_of_isMinOn (T : ℕ)
+    (hψ_diff : ∀ t ∈ Ico 1 (T + 1), HasFDerivAt (ψ (t + 1)) (gψ (t + 1) (w (t + 1))) (w (t + 1)))
+    (hψ_conv : ∀ t ∈ Ico 1 (T + 1), ConvexOn ℝ s (ψ (t + 1)))
+    (hw_mem : ∀ t ∈ Ico 1 (T + 2), w t ∈ s)
+    (hu : ∀ t ∈ Ico 1 (T + 1), u t ∈ s)
+    (hw_min : ∀ t ∈ Ico 1 (T + 1),
+      IsMinOn (fun x ↦ (g t) x + ψ (t + 1) x - (gψ t (w t)) x) s (w (t + 1))) :
+    0 ≤ ∑ t ∈ Ico 1 (T + 1), optimality gψ u w g t := by
+  refine sum_nonneg fun t ht ↦ ?_
+  have ht2 : t + 1 ∈ Ico 1 (T + 2) := by rw [mem_Ico] at ht ⊢; omega
+  exact optimality_nonneg_of_isMinOn t (hψ_diff t ht) (hψ_conv t ht) (hw_mem (t + 1) ht2) (hu t ht)
+    (hw_min t ht)
 
 end Optimality
 

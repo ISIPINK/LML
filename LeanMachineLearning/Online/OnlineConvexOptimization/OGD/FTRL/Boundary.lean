@@ -5,8 +5,6 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Basic
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.RegretDecomposition
 
 /-!
@@ -29,7 +27,7 @@ open scoped RealInnerProductSpace BigOperators
 
 namespace Online.OCO.OGD.FTRL
 
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+variable {E : Type*} [NormedAddCommGroup E]
 
 /-- Exact boundary term formula for Euclidean quadratic regularization initialized at $w_1 = 0$:
 $$\mathrm{boundary}(\psi_\alpha, u, w, T) = \frac{\alpha_{T+1}}{2} \|u\|^2.$$ -/
@@ -37,7 +35,7 @@ theorem boundary_eucSq_eq (α : ℕ → ℝ) (T : ℕ)
     (u : E) (w : ℕ → E) (hw1 : w 1 = 0) :
     boundary (fun s ↦ eucSq (α s)) u w T = (α (T + 1) / 2) * ‖u‖^2 := by
   dsimp [boundary, eucSq]
-  rw [hw1, inner_zero_right, mul_zero, sub_zero, real_inner_self_eq_norm_mul_norm, sq]
+  rw [hw1, norm_zero, zero_pow two_ne_zero, mul_zero, sub_zero]
 
 /-- Boundary term bound for Euclidean quadratic regularization:
 $$\mathrm{boundary}(\psi_\alpha, u, w, T) \le \frac{\alpha_{T+1}}{2} R^2$$

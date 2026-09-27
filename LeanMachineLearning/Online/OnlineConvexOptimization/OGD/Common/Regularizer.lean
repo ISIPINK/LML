@@ -5,10 +5,10 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.Analysis.InnerProductSpace.LinearMap
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Defs
+import Mathlib.Analysis.InnerProductSpace.Calculus
 
 /-!
 # Euclidean Regularizer and Divergences for Online Gradient Descent (OGD)
@@ -43,10 +43,7 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 
 /-- The scaled Euclidean quadratic regularizer $\psi_\alpha(w) = \frac{\alpha}{2} \|w\|^2$. -/
 noncomputable def eucSq (α : ℝ) (w : E) : ℝ :=
-  (α / 2) * ⟪w, w⟫
-
-lemma eucSq_eq (α : ℝ) (w : E) : eucSq α w = (α / 2) * ‖w‖^2 := by
-  rw [eucSq, real_inner_self_eq_norm_mul_norm, sq]
+  (α / 2) * ‖w‖^2
 
 /-- Gradient of `eucSq α w` as a continuous linear functional $\alpha \cdot \mathrm{innerSL}(w)$. -/
 noncomputable def eucSqFDeriv (α : ℝ) (w : E) : E →L[ℝ] ℝ :=
@@ -62,9 +59,8 @@ is $\frac{\alpha}{2} \|x - y\|^2$. -/
 theorem bregDiv_eucSq_eq (α : ℝ) (x y : E) :
     D_[eucSq α](x, y, eucSqFDeriv α y) = (α / 2) * ‖x - y‖^2 := by
   dsimp [bregDiv, eucSq]
-  rw [eucSqFDeriv_apply]
-  simp only [sq, ← real_inner_self_eq_norm_mul_norm, inner_sub_left,
-    inner_sub_right, real_inner_comm x y]
+  rw [eucSqFDeriv_apply, norm_sub_sq_real, sq,
+    inner_sub_right, real_inner_self_eq_norm_mul_norm, real_inner_comm x y]
   ring
 
 /-- Non-negativity of Euclidean Bregman divergence for $\alpha \ge 0$. -/
@@ -78,7 +74,7 @@ theorem hasFDerivAt_eucSq (α : ℝ) (w : E) :
     HasFDerivAt (eucSq α) (eucSqFDeriv α w) w := by
   have := (hasStrictFDerivAt_norm_sq (F := E) w).hasFDerivAt.const_smul (α / 2)
   convert this using 1
-  · ext x; simp [eucSq, sq, smul_eq_mul]
+  · ext x; simp [eucSq, smul_eq_mul]
   · ext v; simp [eucSqFDeriv]; ring
 
 /-- Differentiability of `eucSq α` on the entire space $E$. -/
@@ -98,6 +94,7 @@ theorem convexOn_eucSq (α : ℝ) (hα : 0 ≤ α) (s : Set E) (hs : Convex ℝ 
       inner_sub_left, inner_sub_right, inner_sub_right]
     simp only [inner_smul_left, inner_smul_right, conj_trivial, real_inner_comm y x]
     linear_combination ⟪x, x⟫ * ha + ⟪y, y⟫ * hb
+  simp only [sq, ← real_inner_self_eq_norm_mul_norm]
   rw [h_id]
   have : 0 ≤ (α / 2) * (a * b * ⟪x - y, x - y⟫) := by
     have : 0 ≤ ⟪x - y, x - y⟫ := real_inner_self_nonneg

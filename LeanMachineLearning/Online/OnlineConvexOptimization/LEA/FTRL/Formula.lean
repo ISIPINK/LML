@@ -5,14 +5,10 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
-public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Optimality
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.RegretDecomposition
+import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
+import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Optimality
+import Mathlib.Analysis.Calculus.FDeriv.Add
 
 /-!
 # Exponential Weights Update Formula for Follow-the-Regularized-Leader (FTRL)
@@ -205,13 +201,13 @@ lemma expWeights_mem_stdSimplex (hd : 0 < d) (α : ℕ → ℝ)
 at each round $t \ge 1$. -/
 theorem expWeights_isMinOn (hd : 0 < d) (α : ℕ → ℝ)
     (g : ℕ → (EuclideanSpace ℝ (Fin d) →L[ℝ] ℝ)) (t : ℕ) (hα_pos : 0 < α t) :
-    IsMinOn (F_obj (fun t x ↦ unnormEntropy (α t) x) g t)
+    IsMinOn (FObj (fun t x ↦ unnormEntropy (α t) x) g t)
       (stdSimplex (d := d)) (expWeights hd α g t) := by
   have := isMinOn_expWeight hd (α t) hα_pos (∑ i ∈ Ico 1 t, g i)
   have h_eq : (fun x ↦ unnormEntropy (α t) x + (∑ i ∈ Ico 1 t, g i) x) =
-      F_obj (fun t x ↦ unnormEntropy (α t) x) g t := by
+      FObj (fun t x ↦ unnormEntropy (α t) x) g t := by
     ext x
-    dsimp [F_obj]
+    dsimp [FObj]
     rw [_root_.sum_apply]
   rwa [h_eq] at this
 
@@ -219,13 +215,13 @@ theorem expWeights_isMinOn (hd : 0 < d) (α : ℕ → ℝ)
 at horizon $T$. -/
 theorem expWeights_terminal_isMinOn (hd : 0 < d) (α : ℕ → ℝ)
     (g : ℕ → (EuclideanSpace ℝ (Fin d) →L[ℝ] ℝ)) (T : ℕ) (hα_pos : 0 < α (T + 1)) :
-    IsMinOn (F_obj (fun t x ↦ unnormEntropy (α t) x) g (T + 1))
+    IsMinOn (FObj (fun t x ↦ unnormEntropy (α t) x) g (T + 1))
       (stdSimplex (d := d)) (expWeights hd α g (T + 1)) := by
   have := isMinOn_expWeight hd (α (T + 1)) hα_pos (∑ i ∈ Ico 1 (T + 1), g i)
   have h_eq : (fun x ↦ unnormEntropy (α (T + 1)) x + (∑ i ∈ Ico 1 (T + 1), g i) x) =
-      F_obj (fun t x ↦ unnormEntropy (α t) x) g (T + 1) := by
+      FObj (fun t x ↦ unnormEntropy (α t) x) g (T + 1) := by
     ext x
-    dsimp [F_obj]
+    dsimp [FObj]
     rw [_root_.sum_apply]
   rwa [h_eq] at this
 
@@ -242,6 +238,15 @@ theorem expWeights_optimality_nonneg (hd : 0 < d) (α : ℕ → ℝ)
   have h_min := expWeights_isMinOn hd α g t hα_pos
   exact optimality_nonneg_of_isMinOn (ψ := fun t x ↦ unnormEntropy (α t) x)
     t h_diff h_conv hwt hwt1 h_min
+
+/-- Cumulative first-order optimality deficit is non-negative for the concrete `expWeights`
+trajectory. -/
+theorem expWeights_sum_optimality_nonneg (hd : 0 < d) (α : ℕ → ℝ)
+    (g : ℕ → (EuclideanSpace ℝ (Fin d) →L[ℝ] ℝ)) (T : ℕ)
+    (hα_pos : ∀ t ∈ Ico 1 (T + 1), 0 < α t) :
+    0 ≤ ∑ t ∈ Ico 1 (T + 1),
+      optimality (fun t x ↦ unnormEntropyFDeriv (α t) x) (expWeights hd α g) g t :=
+  sum_nonneg fun t ht ↦ expWeights_optimality_nonneg hd α g t (hα_pos t ht)
 
 /-- Terminal optimality deficit is non-positive for the concrete `expWeights` trajectory
 at any comparator $u \in \Delta^{d-1}$. -/

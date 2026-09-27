@@ -5,9 +5,6 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Basic
-public import Mathlib.Algebra.BigOperators.Intervals
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 
 /-!
@@ -31,7 +28,6 @@ $$(g_t)(w_t - w_{t+1}) - \frac{\alpha_t}{2} \|w_{t+1} - w_t\|^2 \le \frac{1}{2\a
 open scoped RealInnerProductSpace BigOperators Bregman
 open Finset
 
-set_option linter.style.longLine false
 
 @[expose] public section
 
@@ -41,13 +37,15 @@ variable {E : Type*} [NormedAddCommGroup E]
 
 /-- Stability tradeoff between loss reduction and regularizer distance:
 $$(g_t)(w_t - w_{t+1}) - D_{\psi_t}(w_{t+1}, w_t, \nabla\psi_t(w_t)).$$ -/
-def stability [NormedSpace ℝ E] (ψ : ℕ → E → ℝ) (gψ : ℕ → E → (E →L[ℝ] ℝ)) (w : ℕ → E) (g : ℕ → (E →L[ℝ] ℝ)) (t : ℕ) : ℝ :=
+def stability [NormedSpace ℝ E] (ψ : ℕ → E → ℝ) (gψ : ℕ → E → (E →L[ℝ] ℝ))
+(w : ℕ → E) (g : ℕ → (E →L[ℝ] ℝ)) (t : ℕ) : ℝ :=
   (g t) (w t - w (t + 1)) - D_[ψ t](w (t + 1), w t, gψ t (w t))
 
 variable [InnerProductSpace ℝ E]
 
 /-- One-round stability bound for Euclidean quadratic regularization via Cauchy-Schwarz / Hölder:
-$$(g_t)(w_t - w_{t+1}) - \frac{\alpha_t}{2} \|w_{t+1} - w_t\|^2 \le \frac{1}{2\alpha_t} \|g_t\|^2.$$ -/
+$$(g_t)(w_t - w_{t+1}) - \frac{\alpha_t}{2} \|w_{t+1} - w_t\|^2 \le
+\frac{1}{2\alpha_t} \|g_t\|^2.$$ -/
 theorem stability_le_norm_sq (α : ℕ → ℝ) (t : ℕ) (hα_pos : 0 < α t)
     (w : ℕ → E) (g : ℕ → (E →L[ℝ] ℝ)) :
     stability (fun s ↦ eucSq (α s)) (fun s ↦ eucSqFDeriv (α s)) w g t ≤
@@ -57,13 +55,16 @@ theorem stability_le_norm_sq (α : ℕ → ℝ) (t : ℕ) (hα_pos : 0 < α t)
   have h_dual : (g t) (w t - w (t + 1)) ≤ ‖g t‖ * ‖w (t + 1) - w t‖ := by
     rw [norm_sub_rev (w (t + 1))]
     exact le_trans (le_abs_self _) ((g t).le_opNorm _)
-  have h_scale : (2 * α t) * ((g t) (w t - w (t + 1)) - (α t / 2) * ‖w (t + 1) - w t‖^2) ≤ ‖g t‖^2 := by
+  have h_scale :
+    (2 * α t) * ((g t) (w t - w (t + 1)) - (α t / 2) * ‖w (t + 1) - w t‖^2) ≤ ‖g t‖^2 := by
     have h_sq : 0 ≤ (α t * ‖w (t + 1) - w t‖ - ‖g t‖)^2 := sq_nonneg _
-    have h_expand : 2 * α t * (‖g t‖ * ‖w (t + 1) - w t‖) - 2 * α t * ((α t / 2) * ‖w (t + 1) - w t‖^2) =
+    have h_expand :
+      2 * α t * (‖g t‖ * ‖w (t + 1) - w t‖) - 2 * α t * ((α t / 2) * ‖w (t + 1) - w t‖^2) =
         ‖g t‖^2 - (α t * ‖w (t + 1) - w t‖ - ‖g t‖)^2 := by ring
     nlinarith
   have h_div := mul_le_mul_of_nonneg_left h_scale (show 0 ≤ 1 / (2 * α t) by positivity)
-  have h_cancel : (1 / (2 * α t)) * ((2 * α t) * ((g t) (w t - w (t + 1)) - (α t / 2) * ‖w (t + 1) - w t‖^2)) =
+  have h_cancel :
+    (1 / (2 * α t)) * ((2 * α t) * ((g t) (w t - w (t + 1)) - (α t / 2) * ‖w (t + 1) - w t‖^2)) =
       (g t) (w t - w (t + 1)) - (α t / 2) * ‖w (t + 1) - w t‖^2 := by
     field_simp [hα_pos.ne']
   rwa [h_cancel] at h_div

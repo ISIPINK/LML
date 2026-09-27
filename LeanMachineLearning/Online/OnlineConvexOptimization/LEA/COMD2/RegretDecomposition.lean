@@ -5,13 +5,8 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Data.Finset.Interval
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
 # Static Regret Decomposition for Online Mirror Descent (LEA Specialization)

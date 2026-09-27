@@ -5,13 +5,8 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.RegretDecomposition
+import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
 
 /-!
 # Boundary Term Bound for Learning with Expert Advice (LEA)

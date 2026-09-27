@@ -5,9 +5,6 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Basic
-public import Mathlib.Algebra.BigOperators.Intervals
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 
 /-!
@@ -39,9 +36,7 @@ $$- (\psi_{t+1} - \psi_t)(w_{t+1}).$$ -/
 def shift (ψ : ℕ → E → ℝ) (w : ℕ → E) (t : ℕ) : ℝ :=
   - (ψ (t + 1) - ψ t) (w (t + 1))
 
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-
-open scoped RealInnerProductSpace
+variable {E : Type*} [NormedAddCommGroup E]
 
 /-- Shift term for `eucSq` is non-positive under non-decreasing regularization weights. -/
 theorem shift_eucSq_nonpos (α : ℕ → ℝ) (w : ℕ → E) (t : ℕ)
@@ -49,8 +44,7 @@ theorem shift_eucSq_nonpos (α : ℕ → ℝ) (w : ℕ → E) (t : ℕ)
     shift (fun s ↦ eucSq (α s)) w t ≤ 0 := by
   dsimp [shift, eucSq]
   have h_diff : 0 ≤ α (t + 1) - α t := sub_nonneg.mpr h_mono
-  have h_inner : 0 ≤ ⟪w (t + 1), w (t + 1)⟫ := real_inner_self_nonneg
-  have : 0 ≤ ((α (t + 1) - α t) / 2) * ⟪w (t + 1), w (t + 1)⟫ := by positivity
+  have : 0 ≤ ((α (t + 1) - α t) / 2) * ‖w (t + 1)‖^2 := by positivity
   linarith
 
 /-- Cumulative shift for `eucSq` is non-positive under non-decreasing regularization weights. -/

@@ -5,15 +5,9 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Basic
-public import Mathlib.Algebra.BigOperators.Intervals
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Shift
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Stability
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.RegretDecomposition
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Boundary
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Optimality
+import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Boundary
+import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Optimality
 
 /-!
 # Regret Bound for Follow-the-Regularized-Leader (FTRL / Lazy OGD)
@@ -21,7 +15,7 @@ public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Optim
 This file proves the multi-round cumulative regret bound for Follow-the-Regularized-Leader
 (FTRL / Lazy OGD) on an arbitrary convex set $s \subseteq E$:
 $$\sum_{t=1}^T (l_t(w_t) - l_t(u)) \le
-  \frac{\alpha_{T+1}}{2} R^2 + \sum_{t=1}^T \frac{1}{2\alpha_t} \|g_t\|^2.$$
+  \frac{\alpha_{T+1}}{2} \|u\|^2 + \sum_{t=1}^T \frac{1}{2\alpha_t} \|g_t\|^2.$$
 
 ## Main results
 * `regret_bound`: The cumulative regret bound for FTRL on an arbitrary convex set $s$.
@@ -48,7 +42,7 @@ theorem regret_bound (T : ℕ)
     (w : ℕ → E) (hw1 : w 1 = 0)
     (hw_mem : ∀ t ∈ Ico 1 (T + 2), w t ∈ s)
     (hw_min : ∀ t ∈ Ico 1 (T + 2),
-      IsMinOn (F_obj (fun k ↦ eucSq (E := E) (α k)) g t) s (w t))
+      IsMinOn (fun x ↦ (α t / 2) * ‖x‖ ^ 2 + ∑ i ∈ Ico 1 t, g i x) s (w t))
     (hg : ∀ t ∈ Ico 1 (T + 1), HasSubgradientWithinAt (l t) (g t) s (w t))
     (u : E) (hu : u ∈ s) :
     ∑ t ∈ Ico 1 (T + 1), (l t (w t) - l t u) ≤
@@ -61,14 +55,12 @@ theorem regret_bound (T : ℕ)
     (fun t ht ↦ hα_pos t (Ico_subset_Ico_right (by omega) ht)) w g
   have h_lin : ∑ t ∈ Ico 1 (T + 1), linearization u w g l t ≤ 0 :=
     sum_nonpos fun t ht ↦ by dsimp [linearization]; linarith [hg t ht u hu]
-  have h_opt : 0 ≤ ∑ t ∈ Ico 1 (T + 1), optimality (fun k ↦ eucSqFDeriv (α k)) w g t := by
-    refine sum_nonneg fun t ht ↦ ?_
-    have ht1 : t ∈ Ico 1 (T + 2) := Ico_subset_Ico_right (by omega) ht
-    have ht2 : t + 1 ∈ Ico 1 (T + 2) := by rw [mem_Ico] at ht ⊢; omega
-    exact optimality_nonneg_of_isMinOn t (hasFDerivAt_eucSq (α t) (w t))
-      (convexOn_eucSq (α t) (hα_pos t ht1).le s hs) (hw_mem t ht1) (hw_mem (t + 1) ht2)
-      (hw_min t ht1)
-  have h_term := terminalOptimality_nonpos_of_isMinOn T hu (hw_min (T + 1) hT1)
+  have h_opt := sum_optimality_nonneg_of_isMinOn (ψ := fun k ↦ eucSq (α k)) T
+    (fun t _ ↦ hasFDerivAt_eucSq (α t) (w t))
+    (fun t ht ↦ convexOn_eucSq (α t) (hα_pos t (Ico_subset_Ico_right (by omega) ht)).le s hs)
+    hw_mem (fun t ht ↦ hw_min t (Ico_subset_Ico_right (by omega) ht))
+  have h_term := terminalOptimality_nonpos_of_isMinOn (ψ := fun k ↦ eucSq (α k))
+    T hu (hw_min (T + 1) hT1)
   linarith [regret_decomposition_eq (fun k ↦ eucSq (E := E) (α k))
     (fun k ↦ eucSqFDeriv (α k)) u w g l T]
 

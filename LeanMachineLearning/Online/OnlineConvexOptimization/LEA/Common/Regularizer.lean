@@ -6,18 +6,11 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.MVT
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
-public import Mathlib.Analysis.Convex.StdSimplex
-public import Mathlib.Analysis.Calculus.Deriv.Comp
-public import Mathlib.Analysis.Calculus.FDeriv.Add
-public import Mathlib.Analysis.Calculus.FDeriv.Comp
-public import Mathlib.Analysis.Calculus.FDeriv.Mul
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
-public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import Mathlib.Analysis.Calculus.Deriv.Basic
+import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.MVT
+import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
+import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 
 /-!
 # Scaled Unnormalized Negative Entropy Regularizer for LEA

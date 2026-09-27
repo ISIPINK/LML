@@ -5,17 +5,9 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Algebra.BigOperators.Intervals
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.RegretDecomposition
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Boundary
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Optimality
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Formula
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
+import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Boundary
 
 /-!
 # Regret Bound for Follow-the-Regularized-Leader (FTRL) in LEA
@@ -73,11 +65,8 @@ theorem regret_bound (α : ℕ → ℝ) (T : ℕ)
     (fun s ↦ unnormEntropyFDeriv (α s)) u (expWeights hd α g) g l T
   have h_bound := boundary_shifted_le_log_card α (hα_pos 1 (by simp)).le T hd u hu
     (expWeights hd α g) hw1
-  have h_opt_sum :
-      0 ≤ ∑ t ∈ Ico 1 (T + 1),
-        optimality (fun s ↦ unnormEntropyFDeriv (α s)) (expWeights hd α g) g t :=
-    sum_nonneg fun t ht ↦ expWeights_optimality_nonneg hd α g t
-      (hα_pos t (by rw [mem_Ico] at ht ⊢; omega))
+  have h_opt_sum := expWeights_sum_optimality_nonneg hd α g T
+    (fun t ht ↦ hα_pos t (by rw [mem_Ico] at ht ⊢; omega))
   have h_lin_sum : ∑ t ∈ Ico 1 (T + 1), linearization u (expWeights hd α g) g l t ≤ 0 :=
     sum_nonpos fun t ht ↦ by dsimp [linearization]; linarith [hg t ht u hu]
   have h_stab := sum_stability_le_dual_norm_wt (w := expWeights hd α g) (g := g) α T
@@ -86,7 +75,7 @@ theorem regret_bound (α : ℕ → ℝ) (T : ℕ)
   have h_term_shift :
       terminalOptimality (fun s ↦ unnormEntropyShifted (α s)) u (expWeights hd α g) g T =
       terminalOptimality (fun s ↦ unnormEntropy (α s)) u (expWeights hd α g) g T := by
-    dsimp [terminalOptimality, F_obj, unnormEntropyShifted]; ring
+    dsimp [terminalOptimality, FObj, unnormEntropyShifted]; ring
   rw [h_term_shift] at h_decomp
   linarith
 

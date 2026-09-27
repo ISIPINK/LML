@@ -5,23 +5,23 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
-public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Optimality
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.RegretDecomposition
+import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
+import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Optimality
+import Mathlib.Analysis.Calculus.FDeriv.Add
 
 /-!
-# Exponential Weights Update Formula for Learning with Expert Advice (LEA)
+# Update Formula for Online Mirror Descent in LEA
 
-This file defines the explicit closed-form Exponential Weights update (also known as the Hedge
-update / Entropic OMD step) with time-varying regularizer weights $\alpha_t, \alpha_{t+1} > 0$:
+This file defines the explicit closed-form update for Entropic Online Mirror Descent (OMD)
+in Learning with Expert Advice (LEA) with time-varying regularizer weights
+$\alpha_t, \alpha_{t+1} > 0$:
 
 $$w_{t+1, i} = \frac{w_{t, i}^{\alpha_t / \alpha_{t+1}} \exp(-g_{t, i}/\alpha_{t+1})}
   {\sum_{j=1}^d w_{t, j}^{\alpha_t / \alpha_{t+1}} \exp(-g_{t, j}/\alpha_{t+1})}.$$
+
+(When $\alpha_t = \alpha_{t+1} = \frac{1}{\eta}$ is constant, this reduces to the standard
+multiplicative Exponential Weights / Hedge step $w_{t+1, i} \propto w_{t, i} e^{-\eta g_{t, i}}$.)
 
 ## Main definitions
 
@@ -72,7 +72,7 @@ lemma sum_omdExpWeightUnnorm_ne_zero (hd : 0 < d) (α α' : ℝ) {w : EuclideanS
     ∑ i, omdExpWeightUnnorm α α' w g i ≠ 0 :=
   (sum_omdExpWeightUnnorm_pos hd α α' hw_pos g).ne'
 
-/-- The one-step Exponential Weights (Hedge / Entropic OMD) update:
+/-- The one-step update for Entropic Online Mirror Descent:
 $$w_{t+1, i} = \frac{w_{t, i}^{\alpha_t / \alpha_{t+1}} \exp(-g_{t, i} / \alpha_{t+1})}
   {\sum_j w_{t, j}^{\alpha_t / \alpha_{t+1}} \exp(-g_{t, j} / \alpha_{t+1})}.$$ -/
 noncomputable def omdExpWeightStep (_hd : 0 < d) (α α' : ℝ) (w : EuclideanSpace ℝ (Fin d))
@@ -85,7 +85,7 @@ lemma omdExpWeightStep_apply (hd : 0 < d) (α α' : ℝ) (w : EuclideanSpace ℝ
       omdExpWeightUnnorm α α' w g i / ∑ j, omdExpWeightUnnorm α α' w g j :=
   rfl
 
-/-- Positivity of coordinates after an Exponential Weights step. -/
+/-- Positivity of coordinates after an Entropic OMD step. -/
 lemma omdExpWeightStep_pos (hd : 0 < d) (α α' : ℝ) (w : EuclideanSpace ℝ (Fin d))
     (hw_pos : ∀ i, 0 < w i) (g : EuclideanSpace ℝ (Fin d) →L[ℝ] ℝ) (i : Fin d) :
     0 < omdExpWeightStep hd α α' w g i := by
@@ -93,7 +93,7 @@ lemma omdExpWeightStep_pos (hd : 0 < d) (α α' : ℝ) (w : EuclideanSpace ℝ (
   exact div_pos (omdExpWeightUnnorm_pos α α' hw_pos g i)
     (sum_omdExpWeightUnnorm_pos hd α α' hw_pos g)
 
-/-- The Exponential Weights update always stays within the standard simplex $\Delta^{d-1}$. -/
+/-- The Entropic OMD update always stays within the standard simplex $\Delta^{d-1}$. -/
 theorem omdExpWeightStep_mem_stdSimplex (hd : 0 < d) (α α' : ℝ) (w : EuclideanSpace ℝ (Fin d))
     (hw_pos : ∀ i, 0 < w i) (g : EuclideanSpace ℝ (Fin d) →L[ℝ] ℝ) :
     omdExpWeightStep hd α α' w g ∈ stdSimplex (d := d) := by
@@ -287,5 +287,16 @@ theorem omdExpWeights_optimality_nonneg (hd : 0 < d) (α : ℕ → ℝ)
   exact optimality_nonneg_of_isMinOn (ψ := fun s ↦ unnormEntropy (α s))
     (gψ := fun s ↦ unnormEntropyFDeriv (α s))
     t h_diff h_conv hw_succ hu h_min
+
+/-- Cumulative first-order optimality deficit is non-negative for the concrete `omdExpWeights`
+trajectory at any comparator $u \in \Delta^{d-1}$. -/
+theorem omdExpWeights_sum_optimality_nonneg (hd : 0 < d) (α : ℕ → ℝ)
+    (g : ℕ → (EuclideanSpace ℝ (Fin d) →L[ℝ] ℝ)) (T : ℕ)
+    (hα_pos : ∀ t ∈ Ico 1 (T + 1), 0 < α (t + 1))
+    {u : EuclideanSpace ℝ (Fin d)} (hu : u ∈ stdSimplex) :
+    0 ≤ ∑ t ∈ Ico 1 (T + 1),
+      optimality (fun s ↦ unnormEntropyFDeriv (α s)) u (omdExpWeights hd α g) g t :=
+  sum_nonneg fun t ht ↦
+    omdExpWeights_optimality_nonneg hd α g t (mem_Ico.mp ht).1 (hα_pos t ht) hu
 
 end Online.OCO.LEA.COMD2

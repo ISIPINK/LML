@@ -5,12 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Basic
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 
 /-!
 # Stability Bound for Learning with Expert Advice (LEA)

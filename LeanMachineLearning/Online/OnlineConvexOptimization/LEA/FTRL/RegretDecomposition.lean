@@ -5,13 +5,8 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Data.Finset.Interval
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
 # Static Regret Decomposition for Follow-the-Regularized-Leader (FTRL)
@@ -21,21 +16,8 @@ Follow-the-Regularized-Leader (FTRL) in the Learning with Expert Advice (LEA) se
 where the predictor optimizes the cumulative linearized objective
 $$F_t(y) = \psi_t(y) + \sum_{i=1}^{t-1} g_i(y).$$
 
-* **Static comparator**: $u_t = u$ for all rounds $t$.
-* **Cumulative objective**: incorporates all past linearized losses $\sum_{i=1}^{t-1} g_i$.
-* **Pure algebraic equality**: holds without requiring subgradient or convexity assumptions.
-
-Under these conditions, the regret is governed by the boundary drift and per-round terms:
-1. `boundary`: Terminal regularizer value at $u$ minus initial regularizer at $w_1$.
-2. `shift`: Cross-round regularizer potential drift on iterates $w_{t+1}$ (from `LEA.Common`).
-3. `stability`: Stability tradeoff between loss reduction and regularizer Bregman divergence
-   (from `LEA.Common`).
-4. `linearization`: Loss linearization error via subgradients $g_t$ at $w_t$.
-5. `optimality`: First-order optimality deficit of $w_t$ under objective $F_t$.
-6. `terminalOptimality`: Terminal optimality deficit of $w_{T+1}$ under objective $F_{T+1}$ at $u$.
-
 ## Main definitions
-* `F_obj`
+* `FObj`
 * `boundary`
 * `linearization`
 * `optimality`
@@ -66,7 +48,7 @@ variable (l : ℕ → E → ℝ)
 /--
 The cumulative linearized objective function $F_t(y) = \psi_t(y) + \sum_{i=1}^{t-1} g_i(y)$.
 -/
-def F_obj (t : ℕ) (y : E) : ℝ :=
+def FObj (t : ℕ) (y : E) : ℝ :=
   ψ t y + ∑ i ∈ Ico 1 t, g i y
 
 /-- Boundary regularizer term: $\psi_{T+1}(u) - \psi_1(w_1)$. -/
@@ -83,7 +65,7 @@ def optimality (t : ℕ) : ℝ :=
 
 /-- Terminal optimality deficit of $w_{T+1}$ under full objective $F_{T+1}$ relative to $u$. -/
 def terminalOptimality (T : ℕ) : ℝ :=
-  F_obj ψ g (T + 1) (w (T + 1)) - F_obj ψ g (T + 1) u
+  FObj ψ g (T + 1) (w (T + 1)) - FObj ψ g (T + 1) u
 
 /-- Exact multi-round algebraic regret decomposition for FTRL with cumulative linearized losses. -/
 theorem regret_decomposition_eq (T : ℕ) :
@@ -96,11 +78,11 @@ theorem regret_decomposition_eq (T : ℕ) :
     + terminalOptimality ψ u w g T := by
   induction T with
   | zero =>
-    simp [boundary, terminalOptimality, F_obj]
+    simp [boundary, terminalOptimality, FObj]
   | succ T ih =>
     simp_rw [sum_Ico_succ_top (by omega : 1 ≤ T + 1), ih]
     dsimp [boundary, terminalOptimality, LEA.shift, LEA.stability, linearization, optimality,
-      bregDiv, F_obj]
+      bregDiv, FObj]
     simp only [map_sub, add_apply, _root_.sum_apply]
     simp_rw [sum_sub_distrib, sum_Ico_succ_top (by omega : 1 ≤ T + 1)]
     ring

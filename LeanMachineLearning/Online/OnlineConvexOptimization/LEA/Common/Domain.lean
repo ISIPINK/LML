@@ -6,7 +6,6 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.Convex.Basic
 
 /-!
 # Standard Simplex Domain for Online Convex Optimization

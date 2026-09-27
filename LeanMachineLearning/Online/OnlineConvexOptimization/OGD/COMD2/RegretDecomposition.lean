@@ -5,32 +5,15 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Analysis.Normed.Operator.ContinuousLinearMap
-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Data.Finset.Interval
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Shift
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Stability
-public import LeanMachineLearning.ForMathlib.Analysis.Convex.Bregman.Basic
 
 /-!
 # Dynamic Regret Decomposition for Online Mirror Descent (OMD / Projected OGD)
 
 This file defines the exact multi-round algebraic dynamic regret decomposition for
 Online Mirror Descent (OMD) / Projected OGD on a real normed space $E$
-with time-varying regularizers $\psi_t$:
-* **Dynamic comparator**: arbitrary sequence of comparators $u_t$.
-* **No centering**: $\varphi_t = 0$.
-* **No state adjustment**: $\tilde{w}_t = w_t$.
-
-Under these conditions, the dynamic regret is governed by the boundary divergence & potential drift,
-and five per-round regret terms:
-1. `boundary`: Initial divergence minus final divergence plus regularizer drift at $u_T, u_0$.
-2. `pathlength`: Linear variation term measuring comparator drift $(g\psi_t(w_t))(u_{t-1} - u_t)$.
-3. `stability`: Movement of the loss balanced against regularizer divergence (from `OGD.Common`).
-4. `shift`: Cross-round regularizer potential drift on iterates $w_t$ (from `OGD.Common`).
-5. `optimality`: First-order optimality deficit of the update step.
-6. `linearization`: Loss linearization error via subgradients.
+with time-varying regularizers $\psi_t$.
 
 ## Main definitions
 * `boundary`

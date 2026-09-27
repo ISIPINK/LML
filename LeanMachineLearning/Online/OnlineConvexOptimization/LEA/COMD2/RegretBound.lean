@@ -5,17 +5,9 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Algebra.BigOperators.Intervals
-public import Mathlib.Algebra.Order.BigOperators.Group.Finset
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.RegretDecomposition
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Boundary
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Optimality
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Formula
+public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
+import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.Boundary
 
 /-!
 # Regret Bound for Online Mirror Descent in Learning with Expert Advice (LEA)
@@ -70,11 +62,8 @@ theorem regret_bound (α : ℕ → ℝ) (T : ℕ)
   have h_bound := boundary_shifted_le_log_card α (hα_pos 1 (by simp)).le T
     (hα_pos (T + 1) (by simp)).le hd u hu (omdExpWeights hd α g) hw1
     (hw (T + 1) (by simp)) (hw_pos (T + 1) (by simp))
-  have h_opt_sum :
-      0 ≤ ∑ t ∈ Ico 1 (T + 1),
-        optimality (fun s ↦ unnormEntropyFDeriv (α s)) u (omdExpWeights hd α g) g t :=
-    sum_nonneg fun t ht ↦ omdExpWeights_optimality_nonneg hd α g t (mem_Ico.mp ht).1
-      (hα_pos (t + 1) (by rw [mem_Ico] at ht ⊢; omega)) hu
+  have h_opt_sum := omdExpWeights_sum_optimality_nonneg hd α g T
+    (fun t ht ↦ hα_pos (t + 1) (by rw [mem_Ico] at ht ⊢; omega)) hu
   have h_lin_sum : ∑ t ∈ Ico 1 (T + 1), linearization u (omdExpWeights hd α g) g l t ≤ 0 :=
     sum_nonpos fun t ht ↦ by dsimp [linearization]; linarith [hg t ht u hu]
   have h_stab := sum_stability_le_dual_norm_wt (w := omdExpWeights hd α g) (g := g) α T
