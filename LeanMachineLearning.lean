@@ -55,6 +55,7 @@ public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.COM
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.COMD2.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.Algorithms.FTRL.RegretDecomposition
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Domain
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.RegretTerms
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
@@ -68,6 +69,7 @@ public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Bound
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Optimality
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Formula
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.RegretBound
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.RegretTerms
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Shift
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Stability

@@ -6,6 +6,7 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 
 /-!
 # Boundary Term Bound for Euclidean FTRL / Lazy OGD

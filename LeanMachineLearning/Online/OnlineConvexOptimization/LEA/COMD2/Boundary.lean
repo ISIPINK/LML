@@ -6,6 +6,7 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.COMD2.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
 import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
 
 /-!

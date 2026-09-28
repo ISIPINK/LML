@@ -6,6 +6,8 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Formula
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
 public import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Basic
 import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.Boundary
 

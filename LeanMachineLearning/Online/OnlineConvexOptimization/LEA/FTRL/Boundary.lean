@@ -6,6 +6,7 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.FTRL.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
 
 /-!
 # Boundary Term Bound for Follow-the-Regularized-Leader (FTRL)

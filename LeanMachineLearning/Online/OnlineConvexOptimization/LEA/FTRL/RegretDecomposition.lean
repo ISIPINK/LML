@@ -5,8 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Shift
-public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Stability
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.RegretTerms
 
 /-!
 # Static Regret Decomposition for Follow-the-Regularized-Leader (FTRL)

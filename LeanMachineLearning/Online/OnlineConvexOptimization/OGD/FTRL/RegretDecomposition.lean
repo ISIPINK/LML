@@ -5,8 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Shift
-public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Stability
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.RegretTerms
 
 /-!
 # Static Regret Decomposition for Follow-the-Regularized-Leader (FTRL / Lazy OGD)

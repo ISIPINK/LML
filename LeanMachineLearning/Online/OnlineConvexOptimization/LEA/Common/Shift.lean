@@ -5,6 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
+public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.RegretTerms
 public import LeanMachineLearning.Online.OnlineConvexOptimization.LEA.Common.Regularizer
 
 /-!
@@ -44,11 +45,6 @@ open Finset
 namespace Online.OCO.LEA
 
 variable {E : Type*}
-
-/-- Potential shift accounting for changes in regularizers across rounds:
-$$- (\psi_{t+1} - \psi_t)(w_{t+1}).$$ -/
-def shift (ψ : ℕ → E → ℝ) (w : ℕ → E) (t : ℕ) : ℝ :=
-  - (ψ (t + 1) - ψ t) (w (t + 1))
 
 /-- If the regularizer weight sequence is non-decreasing ($\alpha_t \le \alpha_{t+1}$)
 (i.e., decreasing step sizes $\eta_t = 1/\alpha_t$)

@@ -6,6 +6,9 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.RegretDecomposition
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Shift
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Stability
 import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Boundary
 import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.Optimality
 

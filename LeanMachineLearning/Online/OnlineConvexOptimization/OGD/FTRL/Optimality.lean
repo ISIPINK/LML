@@ -6,6 +6,7 @@ Authors: Isidoor Pinillo Esquivel
 module
 
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.FTRL.RegretDecomposition
+public import Mathlib.Analysis.Calculus.FDeriv.Defs
 import LeanMachineLearning.ForMathlib.Analysis.Convex.Subgradient.Deriv
 import Mathlib.Analysis.Calculus.FDeriv.Add
 
@@ -21,7 +22,7 @@ $s \subseteq E$.
 * `terminalOptimality_nonpos_of_isMinOn`: $\mathrm{terminalOptimality}_T \le 0$.
 -/
 
-open scoped RealInnerProductSpace BigOperators Bregman Topology
+open scoped BigOperators Bregman Topology
 open Filter Finset
 
 @[expose] public section

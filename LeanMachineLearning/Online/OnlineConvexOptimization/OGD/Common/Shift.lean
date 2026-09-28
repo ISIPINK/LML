@@ -5,6 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.RegretTerms
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 
 /-!
@@ -28,13 +29,6 @@ open Finset
 @[expose] public section
 
 namespace Online.OCO.OGD
-
-variable {E : Type*}
-
-/-- Potential shift accounting for changes in regularizers across rounds:
-$$- (\psi_{t+1} - \psi_t)(w_{t+1}).$$ -/
-def shift (ψ : ℕ → E → ℝ) (w : ℕ → E) (t : ℕ) : ℝ :=
-  - (ψ (t + 1) - ψ t) (w (t + 1))
 
 variable {E : Type*} [NormedAddCommGroup E]
 

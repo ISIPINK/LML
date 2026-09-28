@@ -5,6 +5,7 @@ Authors: Isidoor Pinillo Esquivel
 -/
 module
 
+public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.RegretTerms
 public import LeanMachineLearning.Online.OnlineConvexOptimization.OGD.Common.Regularizer
 
 /-!
@@ -34,12 +35,6 @@ open Finset
 namespace Online.OCO.OGD
 
 variable {E : Type*} [NormedAddCommGroup E]
-
-/-- Stability tradeoff between loss reduction and regularizer distance:
-$$(g_t)(w_t - w_{t+1}) - D_{\psi_t}(w_{t+1}, w_t, \nabla\psi_t(w_t)).$$ -/
-def stability [NormedSpace ℝ E] (ψ : ℕ → E → ℝ) (gψ : ℕ → E → (E →L[ℝ] ℝ))
-(w : ℕ → E) (g : ℕ → (E →L[ℝ] ℝ)) (t : ℕ) : ℝ :=
-  (g t) (w t - w (t + 1)) - D_[ψ t](w (t + 1), w t, gψ t (w t))
 
 variable [InnerProductSpace ℝ E]
 
