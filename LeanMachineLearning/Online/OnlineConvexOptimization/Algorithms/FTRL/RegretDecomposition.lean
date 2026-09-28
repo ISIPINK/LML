@@ -25,7 +25,7 @@ $$\sum_{t=1}^T (\ell_t(x_t) - \ell_t(u))
   + F_{T+1}(x_{T+1}) - F_{T+1}(u).$$
 
 ## Main definitions
-* `F_obj`
+* `Fobj`
 * `boundary`
 * `stability`
 * `terminalOptimality`
@@ -53,21 +53,21 @@ variable (l : ℕ → E → ℝ)
 /--
 Cumulative objective (Orabona's $F_t$): $F_t(x) = \psi_t(x) + \sum_{i=1}^{t-1} \ell_i(x)$.
 -/
-def F_obj (t : ℕ) (y : E) : ℝ :=
+def Fobj (t : ℕ) (y : E) : ℝ :=
   ψ t y + ∑ i ∈ Ico 1 t, l i y
 
 /-- Boundary term: $\psi_{T+1}(u) - \min_{x \in V} \psi_1(x) = \psi_{T+1}(u) - F_1(x_1)$. -/
 def boundary (T : ℕ) : ℝ :=
-  ψ (T + 1) u - F_obj ψ l 1 (w 1)
+  ψ (T + 1) u - Fobj ψ l 1 (w 1)
 
 /-- One-round stability penalty $F_t(x_t) - F_{t+1}(x_{t+1}) + \ell_t(x_t)$,
 measuring the advance of $F_t + \ell_t$ between $x_t$ and $x_{t+1}$. -/
 def stability (t : ℕ) : ℝ :=
-  F_obj ψ l t (w t) - F_obj ψ l (t + 1) (w (t + 1)) + l t (w t)
+  Fobj ψ l t (w t) - Fobj ψ l (t + 1) (w (t + 1)) + l t (w t)
 
 /-- Terminal optimality deficit $F_{T+1}(x_{T+1}) - F_{T+1}(u)$ of $x_{T+1}$ relative to $u$. -/
 def terminalOptimality (T : ℕ) : ℝ :=
-  F_obj ψ l (T + 1) (w (T + 1)) - F_obj ψ l (T + 1) u
+  Fobj ψ l (T + 1) (w (T + 1)) - Fobj ψ l (T + 1) u
 
 /-- Master Algebraic Regret Decomposition Identity for FTRL (Orabona, Lemma 7.1):
 $$\sum_{t=1}^T (\ell_t(x_t) - \ell_t(u))
@@ -81,10 +81,10 @@ theorem regret_decomposition_eq (T : ℕ) :
     + terminalOptimality ψ u w l T := by
   induction T with
   | zero =>
-    simp [boundary, terminalOptimality, F_obj]
+    simp [boundary, terminalOptimality, Fobj]
   | succ T ih =>
     simp_rw [sum_Ico_succ_top (by omega : 1 ≤ T + 1), ih]
-    dsimp [boundary, terminalOptimality, stability, F_obj]
+    dsimp [boundary, terminalOptimality, stability, Fobj]
     simp_rw [sum_Ico_succ_top (by omega : 1 ≤ T + 1)]
     ring
 
